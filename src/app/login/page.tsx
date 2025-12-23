@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from '@/contexts/AuthContext';
 import { Eye, EyeOff } from 'lucide-react';
 import { toast } from "react-hot-toast";
-
+import { Suspense } from "react";
 export default function AdminLoginPage() {
   const { login, isAuthenticated, loading } = useAuth();
   const [email, setEmail] = useState("");
@@ -63,6 +63,7 @@ export default function AdminLoginPage() {
   }
 
   return (
+    <Suspense fallback={<div>Loading...</div>}>
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 px-4">
       <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900/50 backdrop-blur-xl p-8 shadow-2xl">
         <div className="text-center mb-8">
@@ -165,5 +166,6 @@ export default function AdminLoginPage() {
         </div>
       </div>
     </div>
+    </Suspense>
   );
 }
