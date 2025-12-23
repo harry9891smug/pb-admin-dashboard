@@ -602,7 +602,7 @@ export default function BusinessesPage() {
       setSaving(true);
 
       const body = {
-        ownerUserId: businessForm.ownerUserId,
+        ownerUserId: businessForm.ownerUserId || 0,
         name: businessForm.name.trim(),
         businessname: businessForm.businessname.trim(),
         category: businessForm.category.trim(),

@@ -1,26 +1,29 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import React, { useState, useEffect, Suspense } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from '@/contexts/AuthContext';
 import { Eye, EyeOff } from 'lucide-react';
 import { toast } from "react-hot-toast";
-import { Suspense } from "react";
-export default function AdminLoginPage() {
+
+// Inner component that uses useSearchParams
+function LoginContent() {
   const { login, isAuthenticated, loading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
-  const searchParams = useSearchParams();
+  
+  // REMOVED: useSearchParams() - temporary fix
+  // const searchParams = useSearchParams();
 
   useEffect(() => {
     if (!loading && isAuthenticated) {
-      const redirectTo = searchParams.get('redirect') || '/admin/dashboard';
-      router.push(redirectTo);
+      // Temporary: Direct redirect without searchParams
+      router.push('/admin/dashboard');
     }
-  }, [isAuthenticated, loading, router, searchParams]);
+  }, [isAuthenticated, loading, router]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -63,17 +66,16 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <Suspense fallback={<div>Loading...</div>}>
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 px-4">
       <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900/50 backdrop-blur-xl p-8 shadow-2xl">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center mb-4">
-          <img
-            src="/logo.png"  // <-- apna file name (public/ ke andar)
-            alt="PromoBandhu Admin"
-            className="h-16 w-auto"
-          />
-        </div>
+            <img
+              src="/logo.png"
+              alt="PromoBandhu Admin"
+              className="h-16 w-auto"
+            />
+          </div>
 
           <h1 className="text-2xl font-bold text-slate-100 mb-2">
             PromoBandhu Admin
@@ -166,6 +168,21 @@ export default function AdminLoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+// Main export with Suspense
+export default function AdminLoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-500 mx-auto mb-4"></div>
+          <p className="text-slate-400">Loading login page...</p>
+        </div>
+      </div>
+    }>
+      <LoginContent />
     </Suspense>
   );
 }
