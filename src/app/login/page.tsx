@@ -29,7 +29,7 @@ function LoginContent() {
     e.preventDefault();
     
     if (!email || !password) {
-      toast.error("Please enter both email and password");
+      toast.error("Please enter both email and password.");
       return;
     }
     
