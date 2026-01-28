@@ -2,6 +2,13 @@ import { apiClient } from "./axios";
 import { setAuthToken, clearAuth, getAuthToken } from "./auth";
 import { toastSuccess, toastError, toastLoading, toastPromise } from "./toast";
 
+export * from "./api/admin/rbac";
+export * from "./api/admin/jobRole";
+export * from "./api/admin/team";
+export * from "./api/admin/templateImages";
+export * from "./api/admin/sms";
+export * from "./api/admin/subscriptions";
+
 const unwrapList = <T = any>(res: any): T[] => {
   // Supports: res.data.items, res.data.data, res.data.data.items
   const list =
@@ -263,15 +270,17 @@ export const isAuthenticated = (): boolean => {
 
 export const adminLogout = (): void => {
   console.log("👋 Logging out user");
+
   clearAuth();
-  
-  if (typeof window !== 'undefined') {
-    localStorage.removeItem('pb_admin_refresh_token');
-    localStorage.removeItem('pb_admin_user');
+  if (typeof window !== "undefined") {
+    localStorage.removeItem("pb_admin_refresh_token");
+    localStorage.removeItem("pb_admin_user");
+    window.location.href = "/login"; // ✅ redirect
   }
-  
-  console.log(" User logged out successfully");
+
+  console.log("✅ User logged out successfully");
 };
+
 
 export const safeLocalStorage = {
   getItem: (key: string): string | null => {
