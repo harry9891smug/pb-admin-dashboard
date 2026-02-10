@@ -324,8 +324,8 @@ export default function AdvertisementsPage() {
       <span
         className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium border ${
           isActive
-            ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
-            : "bg-red-500/20 text-red-300 border-red-500/40"
+            ? "bg-emerald-500/20 text-black-300 border-emerald-500/40"
+            : "bg-red-500/20 text-black-300 border-red-500/40"
         }`}
       >
         {isActive ? <CheckCircle className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}

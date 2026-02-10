@@ -101,7 +101,7 @@ export default function SubscriptionDetailPage() {
       <div className="flex items-center justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-3">
-            <h1 className="text-xl font-semibold text-white">
+            <h1 className="text-xl font-semibold text-black">
               Subscription #{id}
             </h1>
 
@@ -202,7 +202,7 @@ export default function SubscriptionDetailPage() {
 
           {/* Owner */}
           <Card>
-            <h2 className="text-sm font-semibold text-white mb-3">Owner</h2>
+            <h2 className="text-sm font-semibold text-black mb-3">Owner</h2>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <KV label="User ID" value={String(row.business?.owner?.id ?? "-")} />
@@ -220,7 +220,7 @@ export default function SubscriptionDetailPage() {
 
 function Card({ children }: { children: React.ReactNode }) {
   return (
-    <div className="border border-slate-800 rounded-xl bg-slate-950/40 p-4">
+    <div className="border border-slate-800 rounded-xl bg-black-950/40 p-4">
       {children}
     </div>
   );
@@ -231,12 +231,12 @@ function Label({ children }: { children: React.ReactNode }) {
 }
 
 function Value({ children }: { children: React.ReactNode }) {
-  return <div className="text-base font-semibold text-white mt-1">{children}</div>;
+  return <div className="text-base font-semibold text-black mt-1">{children}</div>;
 }
 
 function KV({ label, value }: { label: string; value: string }) {
   return (
-    <div className="border border-slate-800 rounded-xl p-3 bg-slate-950/30">
+    <div className="border border-slate-800 rounded-xl p-3 bg-white-750/30">
       <div className="text-xs text-slate-400">{label}</div>
       <div className="text-sm text-slate-200 mt-1 break-words">{value}</div>
     </div>

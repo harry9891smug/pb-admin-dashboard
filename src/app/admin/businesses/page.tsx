@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState, useRef } from "react";
 import { MoreVertical } from "lucide-react";
+import statesList from "@/data/states.json";
 
 import {
   Search,
@@ -66,6 +67,7 @@ const emptyUserForm: CreateUserForm = {
   role: "businessOwner",
   email: "",
 };
+
 
 const emptyBusinessForm: CreateBusinessForm = {
   ownerUserId: null,
@@ -319,7 +321,13 @@ export default function BusinessesPage() {
   const [editUserId, setEditUserId] = useState<number | null>(null);
   const [editUserMobile, setEditUserMobile] = useState("");
   const [editUserVerified, setEditUserVerified] = useState(false);
-
+const stateOptions = useMemo(() => {
+  return (statesList as any[])
+    .slice()
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map((s) => ({ value: s.name, label: s.name })); 
+  // ✅ value = state name (simple)
+}, []);
   const fetchBusinesses = async () => {
     try {
       setLoading(true);
@@ -385,11 +393,11 @@ export default function BusinessesPage() {
     const status = business.subscription?.status;
 
     const statusConfig: any = {
-      active: { class: "bg-emerald-500/20 text-emerald-300 border-emerald-500/40", label: "Active" },
-      grace: { class: "bg-blue-500/20 text-blue-300 border-blue-500/40", label: "Grace" },
-      trial: { class: "bg-yellow-500/20 text-yellow-300 border-yellow-500/40", label: "Trial" },
-      cancelled: { class: "bg-red-500/20 text-red-300 border-red-500/40", label: "Cancelled" },
-      failedPayment: { class: "bg-orange-500/20 text-orange-300 border-orange-500/40", label: "Payment Failed" },
+      active: { class: "bg-emerald-500/20 text-black-300 border-emerald-500/40", label: "Active" },
+      grace: { class: "bg-blue-500/20 text-black-300 border-blue-500/40", label: "Grace" },
+      trial: { class: "bg-yellow-500/20 text-black-300 border-yellow-500/40", label: "Trial" },
+      cancelled: { class: "bg-red-500/20 text-black-300 border-red-500/40", label: "Cancelled" },
+      failedPayment: { class: "bg-orange-500/20 text-black-300 border-orange-500/40", label: "Payment Failed" },
     };
 
     const config = statusConfig[status || "trial"] || statusConfig.trial;
@@ -447,29 +455,38 @@ export default function BusinessesPage() {
     return () => document.removeEventListener("click", handler);
   }, []);
 
-  const openEditBusiness = (b: Business) => {
-    setOpenActionForId(null);
-    fetchCategories();
+ const openEditBusiness = async (b: Business) => {
+  setOpenActionForId(null);
+  fetchCategories();
 
+  try {
     setEditBizId(b.id);
+
+    // ✅ Always fetch full details
+    const full = await getBusinessAdminById(b.id);
+
     setEditBizForm({
-      ownerUserId: (b as any)?.owner?.id ?? null,
-      name: (b as any)?.name ?? (b as any)?.owner?.name ?? "",
-      businessname: (b as any)?.businessname ?? "",
-      category: (b as any)?.category ?? "",
-      address: (b as any)?.address ?? "",
-      address1: (b as any)?.address1 ?? "",
-      state: (b as any)?.state ?? "",
-      city: (b as any)?.city ?? "",
-      pincode: (b as any)?.pincode ?? "",
-      gstNumber: (b as any)?.gstNumber ?? "",
-      businessTagline: (b as any)?.businessTagline ?? "",
-      logoUrl: (b as any)?.logoUrl ?? null,
-      preferredLanguage: ((b as any)?.preferredLanguage ?? "en") as any,
+      ownerUserId: (full as any)?.owner?.id ?? null,
+      name: (full as any)?.name ?? (full as any)?.owner?.name ?? "",
+      businessname: (full as any)?.businessname ?? "",
+      category: String((full as any)?.categoryId ?? (full as any)?.category ?? ""), // (see Fix #2 below)
+      address: (full as any)?.address ?? "",
+      address1: (full as any)?.address1 ?? "",
+      state: (full as any)?.state ?? "",
+      city: (full as any)?.city ?? "",
+      pincode: (full as any)?.pincode ?? "",
+      gstNumber: (full as any)?.gstNumber ?? "",
+      businessTagline: (full as any)?.businessTagline ?? "",
+      logoUrl: (full as any)?.logoUrl ?? null,
+      preferredLanguage: ((full as any)?.preferredLanguage ?? "en") as any,
     });
 
     setEditBizOpen(true);
-  };
+  } catch (e: any) {
+    toast.error(e?.message || "Failed to load business for edit");
+  }
+};
+
 
   const closeEditBusiness = () => {
     if (editBizSaving) return;
@@ -605,7 +622,7 @@ export default function BusinessesPage() {
         ownerUserId: businessForm.ownerUserId || 0,
         name: businessForm.name.trim(),
         businessname: businessForm.businessname.trim(),
-        category: businessForm.category.trim(),
+        category: Number(businessForm.category),
         address: businessForm.address.trim(),
         address1: businessForm.address1.trim() || undefined,
         state: businessForm.state.trim(),
@@ -1084,7 +1101,7 @@ export default function BusinessesPage() {
                       onChange={(v) => setBusinessForm((p) => ({ ...p, category: v }))}
                       options={[
                         { value: "", label: categoriesLoading ? "Loading..." : "Select category" },
-                        ...categories.map((c) => ({ value: c.name, label: c.name })),
+                        ...categories.map((c) => ({ value: String(c.id), label: c.name })),
                       ]}
                       disabled={categoriesLoading}
                     />
@@ -1118,7 +1135,19 @@ export default function BusinessesPage() {
                       />
                     </div>
 
-                    <Field label="State *" value={businessForm.state} onChange={(v) => setBusinessForm((p) => ({ ...p, state: v }))} />
+                    <Select
+                      label="State *"
+                      value={businessForm.state}
+                      onChange={(v) =>
+                        setBusinessForm((p) => ({
+                          ...p,
+                          state: v,
+                          city: "", 
+                        }))
+                      }
+                      options={[{ value: "", label: "Select state" }, ...stateOptions]}
+                    />
+
                     <Field label="City *" value={businessForm.city} onChange={(v) => setBusinessForm((p) => ({ ...p, city: v }))} />
 
                     <Field
@@ -1251,10 +1280,10 @@ export default function BusinessesPage() {
                         <Info label="Status" value={
                           <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs ${
                             viewBusiness.subscription?.status === 'active' 
-                              ? 'bg-emerald-500/20 text-emerald-300' 
+                              ? 'bg-emerald-500/20 text-black-300' 
                               : viewBusiness.subscription?.status === 'trial'
-                              ? 'bg-yellow-500/20 text-yellow-300'
-                              : 'bg-slate-500/20 text-slate-300'
+                              ? 'bg-yellow-500/20 text-black-300'
+                              : 'bg-slate-500/20 text-black-300'
                           }`}>
                             {viewBusiness.subscription?.status || 'N/A'}
                           </span>
@@ -1385,7 +1414,19 @@ export default function BusinessesPage() {
                   <Field label="Address 1" value={editBizForm.address1} onChange={(v) => setEditBizForm((p) => ({ ...p, address1: v }))} />
                 </div>
 
-                <Field label="State *" value={editBizForm.state} onChange={(v) => setEditBizForm((p) => ({ ...p, state: v }))} />
+                <Select
+  label="State *"
+  value={editBizForm.state}
+  onChange={(v) =>
+    setEditBizForm((p) => ({
+      ...p,
+      state: v,
+      city: "", // ✅ reset
+    }))
+  }
+  options={[{ value: "", label: "Select state" }, ...stateOptions]}
+/>
+
                 <Field label="City *" value={editBizForm.city} onChange={(v) => setEditBizForm((p) => ({ ...p, city: v }))} />
 
                 <Field label="Pincode *" value={editBizForm.pincode} onChange={(v) => setEditBizForm((p) => ({ ...p, pincode: v }))} />
