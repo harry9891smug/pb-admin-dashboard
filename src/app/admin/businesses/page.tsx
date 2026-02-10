@@ -50,7 +50,7 @@ type CreateBusinessForm = {
   ownerUserId: number | null;
   name: string;
   businessname: string;
-  category: string;
+  category: number;
   address: string;
   address1: string;
   state: string;
@@ -73,7 +73,7 @@ const emptyBusinessForm: CreateBusinessForm = {
   ownerUserId: null,
   name: "",
   businessname: "",
-  category: "",
+  category: 0,
   address: "",
   address1: "",
   state: "",
@@ -469,7 +469,8 @@ const stateOptions = useMemo(() => {
       ownerUserId: (full as any)?.owner?.id ?? null,
       name: (full as any)?.name ?? (full as any)?.owner?.name ?? "",
       businessname: (full as any)?.businessname ?? "",
-      category: String((full as any)?.categoryId ?? (full as any)?.category ?? ""), // (see Fix #2 below)
+      category: Number((full as any)?.categoryId ?? (full as any)?.categoryId ?? 0),
+ // (see Fix #2 below)
       address: (full as any)?.address ?? "",
       address1: (full as any)?.address1 ?? "",
       state: (full as any)?.state ?? "",
@@ -498,7 +499,7 @@ const stateOptions = useMemo(() => {
     if (!editBizId) return;
 
     if (!editBizForm.businessname.trim()) return toast.error("Business name required");
-    if (!editBizForm.category.trim()) return toast.error("Category required");
+    if (!editBizForm.category || editBizForm.category <= 0) return toast.error("Category required");
     if (!editBizForm.address.trim()) return toast.error("Address required");
     if (!editBizForm.state.trim()) return toast.error("State required");
     if (!editBizForm.city.trim()) return toast.error("City required");
@@ -602,7 +603,7 @@ const stateOptions = useMemo(() => {
     if (!businessForm.ownerUserId) return "ownerUserId missing";
     if (!businessForm.name.trim()) return "Name required";
     if (!businessForm.businessname.trim()) return "Business name required";
-    if (!businessForm.category.trim()) return "Category required";
+    if (!businessForm.category || businessForm.category <= 0) return "Category required";
     if (!businessForm.address.trim()) return "Address required";
     if (!businessForm.state.trim()) return "State required";
     if (!businessForm.city.trim()) return "City required";
@@ -622,7 +623,7 @@ const stateOptions = useMemo(() => {
         ownerUserId: businessForm.ownerUserId || 0,
         name: businessForm.name.trim(),
         businessname: businessForm.businessname.trim(),
-        category: businessForm.category.trim(),
+        category: businessForm.category,
         address: businessForm.address.trim(),
         address1: businessForm.address1.trim() || undefined,
         state: businessForm.state.trim(),
@@ -1096,15 +1097,20 @@ const stateOptions = useMemo(() => {
                     />
                     
                     <Select
-                      label="Category *"
-                      value={businessForm.category}
-                      onChange={(v) => setBusinessForm((p) => ({ ...p, category: v }))}
-                      options={[
-                        { value: "", label: categoriesLoading ? "Loading..." : "Select category" },
-                        ...categories.map((c) => ({ value: String(c.id), label: c.name })),
-                      ]}
-                      disabled={categoriesLoading}
-                    />
+  label="Category *"
+  value={String(businessForm.category)}
+  onChange={(v) =>
+    setBusinessForm((p) => ({ ...p, category: Number(v) }))
+  }
+  options={[
+    { value: "", label: "Select category" },
+    ...categories.map((c) => ({
+      value: String(c.id),
+      label: c.name,
+    })),
+  ]}
+/>
+
 
                     <Select
                       label="Preferred Language"
@@ -1384,16 +1390,23 @@ const stateOptions = useMemo(() => {
                   onChange={(v) => setEditBizForm((p) => ({ ...p, businessname: v }))}
                 />
 
-                <Select
-                  label="Category *"
-                  value={editBizForm.category}
-                  onChange={(v) => setEditBizForm((p) => ({ ...p, category: v }))}
-                  options={[
-                    { value: "", label: categoriesLoading ? "Loading..." : "Select category" },
-                    ...categories.map((c) => ({ value: String(c.id), label: c.name })),
-                  ]}
-                  disabled={categoriesLoading}
-                />
+               <Select
+  label="Category *"
+  value={String(editBizForm.category)}
+  onChange={(v) =>
+    setEditBizForm((p) => ({ ...p, category: Number(v) }))
+  }
+  options={[
+    { value: "0", label: categoriesLoading ? "Loading..." : "Select category" },
+    ...categories.map((c) => ({
+      value: String(c.id),
+      label: c.name,
+    })),
+  ]}
+  disabled={categoriesLoading}
+/>
+
+
 
                 <Select
                   label="Preferred Language"
