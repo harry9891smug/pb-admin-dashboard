@@ -44,31 +44,30 @@ export default function AdminSubscriptionsPage() {
   const [businessId, setBusinessId] = useState<string>("");
   const [userId, setUserId] = useState<string>("");
 
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const res = await getAdminSubscriptions({
-        page,
-        limit,
-        status: status ? (status as any) : undefined,
-        plan: plan ? (plan as any) : undefined,
-        businessId: businessId ? Number(businessId) : undefined,
-        userId: userId ? Number(userId) : undefined,
-      });
+const fetchData = async () => {
+  setLoading(true);
+  try {
+    const res = await getAdminSubscriptions({ page, limit });
 
-      const items = res?.data?.subscriptions ?? [];
-      const tp = res?.data?.pagination?.totalPages ?? 1;
+    console.log("ADMIN SUBS RES =>", res);
+    console.log("SUBS =>", res?.data?.subscriptions);
 
-      setRows(items);
-      setTotalPages(tp);
-    } catch (e) {
-      console.error(e);
-      setRows([]);
-      setTotalPages(1);
-    } finally {
-      setLoading(false);
-    }
-  };
+
+    const data = (res as any)?.data ?? res; // handles both patterns
+    const items = (res as any)?.data?.subscriptions || (res as any)?.data?.data?.subscriptions || [];
+    const tp = data?.pagination?.totalPages ?? 1;
+
+    setRows(items);
+    setTotalPages(tp);
+  } catch (e: any) {
+    console.error(e);
+    alert(e?.message || "Failed to fetch subscriptions");
+    setRows([]);
+    setTotalPages(1);
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     fetchData();
@@ -100,7 +99,7 @@ export default function AdminSubscriptionsPage() {
       {/* Header */}
       <div className="flex items-end justify-between gap-4">
         <div>
-          <h1 className="text-xl font-semibold text-white">Subscriptions</h1>
+          <h1 className="text-xl font-semibold text-black">Subscriptions</h1>
           <p className="text-sm text-slate-400">
             Admin view for business subscriptions (supportAdmin only)
           </p>
@@ -112,7 +111,7 @@ export default function AdminSubscriptionsPage() {
       </div>
 
       {/* Filters */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-3 border border-slate-800 rounded-xl p-4 bg-slate-950/40">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-3 border border-slate-800 rounded-xl p-4 bg-white-950/40">
         <div>
           <label className="text-xs text-slate-400">Status</label>
           <select
@@ -186,8 +185,8 @@ export default function AdminSubscriptionsPage() {
       {/* Table */}
       <div className="border border-slate-800 rounded-xl overflow-hidden">
         <table className="w-full text-sm">
-          <thead className="bg-slate-900/70">
-            <tr className="text-slate-300">
+          <thead className="bg-blue-900/70">
+            <tr className="text-white-300">
               <Th>ID</Th>
               <Th>Business</Th>
               <Th>Owner</Th>
@@ -224,7 +223,7 @@ export default function AdminSubscriptionsPage() {
                   >
                     <Td>{r.id}</Td>
                     <Td>
-                      <div className="text-white">{bName}</div>
+                      <div className="text-black">{bName}</div>
                       <div className="text-xs text-slate-500">
                         Business ID: {r.business?.id ?? "-"}
                       </div>

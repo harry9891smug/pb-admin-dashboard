@@ -44,7 +44,7 @@ export default function AdminSmsPage() {
     <div className="p-6 space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-xl font-semibold text-white">SMS Usage</h1>
+        <h1 className="text-xl font-semibold text-black">SMS Usage</h1>
         <p className="text-sm text-slate-400">
           Track SMS consumption across businesses
         </p>

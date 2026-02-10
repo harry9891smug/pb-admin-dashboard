@@ -2160,3 +2160,156 @@ export const subscriptionApi = {
   getTrialDaysRemaining,
   getSubscriptionBenefits,
 };
+
+
+// =====================
+// ADMIN BILLING INVOICES TYPES
+// =====================
+
+export type BillingTaxType = "IGST" | "CGST_SGST" | string;
+
+export interface AdminBillingInvoiceRow {
+  id: number;
+  businessId: number;
+  subscriptionId: number | null;
+  razorpayPaymentId?: string | null;
+  invoiceNumber: string;
+  financialYear?: string | null;
+  seq?: number | null;
+  invoiceDate?: string | null;
+  currency?: string | null;
+
+  taxableAmount?: string | number | null;
+  cgstAmount?: string | number | null;
+  sgstAmount?: string | number | null;
+  igstAmount?: string | number | null;
+  totalAmount?: string | number | null;
+
+  buyerBusinessName?: string | null;
+  buyerGst?: string | null;
+  buyerState?: string | null;
+  taxType?: BillingTaxType | null;
+  createdAt?: string | null;
+
+  business?: {
+    id: number;
+    businessname?: string | null;
+    name?: string | null;
+  };
+
+  subscription?: {
+    id: number;
+    plan?: "basic" | "standard" | "premium" | string;
+    status?: "trial" | "active" | "cancelled" | string;
+  };
+}
+
+export interface AdminBillingInvoicesFilters {
+  page?: number;
+  limit?: number;
+  q?: string;
+  from?: string; // YYYY-MM-DD
+  to?: string;   // YYYY-MM-DD
+  // optional future:
+  // plan?: "basic" | "standard" | "premium";
+  // status?: "trial" | "active" | "cancelled";
+}
+
+export interface AdminBillingInvoicesResponse {
+  success: boolean;
+  data: {
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+    };
+    invoices: AdminBillingInvoiceRow[];
+  };
+}
+
+export interface AdminBillingInvoiceByIdResponse {
+  success: boolean;
+  data: AdminBillingInvoiceRow;
+}
+
+// =====================
+// ADMIN BILLING INVOICES API FUNCTIONS
+// =====================
+
+export const getAdminBillingInvoices = async (
+  filters?: AdminBillingInvoicesFilters
+): Promise<AdminBillingInvoicesResponse> => {
+  try {
+    const token = getAuthToken();
+    if (!token) throw new Error("Authentication required. Please login again.");
+
+    const res = await apiClient.get<AdminBillingInvoicesResponse>(
+      "/admin/billing-invoices",
+      {
+        headers: { Authorization: `Bearer ${token}` },
+        params: filters,
+      }
+    );
+
+    return res.data;
+  } catch (error: any) {
+    console.error("❌ [API] Get admin billing invoices error:", error);
+
+    if (error.response) {
+      const { status, data } = error.response;
+
+      switch (status) {
+        case 401:
+          clearAuth();
+          throw new Error("Session expired. Please login again.");
+        case 403:
+          throw new Error("Access denied. Admin privileges required.");
+        default:
+          throw new Error(
+            data?.error?.message || `Failed to fetch billing invoices (Status: ${status})`
+          );
+      }
+    }
+    if (error.request) throw new Error("Network error. Cannot connect to server.");
+    throw new Error("Failed to fetch billing invoices. Please try again.");
+  }
+};
+
+export const getAdminBillingInvoiceById = async (
+  id: number
+): Promise<AdminBillingInvoiceByIdResponse> => {
+  try {
+    const token = getAuthToken();
+    if (!token) throw new Error("Authentication required. Please login again.");
+
+    const res = await apiClient.get<AdminBillingInvoiceByIdResponse>(
+      `/admin/billing-invoices/${id}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    return res.data;
+  } catch (error: any) {
+    console.error("❌ [API] Get admin billing invoice by id error:", error);
+
+    if (error.response) {
+      const { status, data } = error.response;
+
+      switch (status) {
+        case 401:
+          clearAuth();
+          throw new Error("Session expired. Please login again.");
+        case 403:
+          throw new Error("Access denied. Admin privileges required.");
+        case 404:
+          throw new Error("Invoice not found.");
+        default:
+          throw new Error(
+            data?.error?.message || `Failed to fetch invoice (Status: ${status})`
+          );
+      }
+    }
+    if (error.request) throw new Error("Network error. Cannot connect to server.");
+    throw new Error("Failed to fetch invoice. Please try again.");
+  }
+};

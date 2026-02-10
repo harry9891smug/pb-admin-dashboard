@@ -382,7 +382,7 @@ export default function PlansPage() {
                     <span
                       className={`text-xs px-2 py-1 rounded-full border ${
                         plan.status === "active"
-                          ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
+                          ? "bg-emerald-500/20 text-black-300 border-emerald-500/40"
                           : "bg-red-500/20 text-red-300 border-red-500/40"
                       }`}
                     >
