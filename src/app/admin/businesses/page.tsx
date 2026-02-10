@@ -622,7 +622,7 @@ const stateOptions = useMemo(() => {
         ownerUserId: businessForm.ownerUserId || 0,
         name: businessForm.name.trim(),
         businessname: businessForm.businessname.trim(),
-        category: Number(businessForm.category),
+        category: businessForm.category.trim(),
         address: businessForm.address.trim(),
         address1: businessForm.address1.trim() || undefined,
         state: businessForm.state.trim(),
