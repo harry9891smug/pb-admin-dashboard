@@ -1390,7 +1390,7 @@ const stateOptions = useMemo(() => {
                   onChange={(v) => setEditBizForm((p) => ({ ...p, category: v }))}
                   options={[
                     { value: "", label: categoriesLoading ? "Loading..." : "Select category" },
-                    ...categories.map((c) => ({ value: c.name, label: c.name })),
+                    ...categories.map((c) => ({ value: String(c.id), label: c.name })),
                   ]}
                   disabled={categoriesLoading}
                 />
