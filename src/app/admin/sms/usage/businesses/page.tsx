@@ -51,7 +51,7 @@ export default function SmsUsageBusinessesPage() {
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-white">SMS Usage – Businesses</h1>
+          <h1 className="text-2xl font-semibold text-black">SMS Usage – Businesses</h1>
           <p className="text-sm text-slate-400">
             Business wise summary (optional month filter)
           </p>

@@ -529,10 +529,10 @@ export default function OffersPage() {
 
   const getStatusBadge = (status: string) => {
     const map: any = {
-      active: { class: "bg-emerald-500/20 text-emerald-300 border-emerald-500/40", label: "Active", icon: <Zap className="w-3 h-3" /> },
-      expired: { class: "bg-red-500/20 text-red-300 border-red-500/40", label: "Expired", icon: <XCircle className="w-3 h-3" /> },
-      awaiting_approval: { class: "bg-yellow-500/20 text-yellow-300 border-yellow-500/40", label: "Awaiting Approval", icon: <Clock className="w-3 h-3" /> },
-      inactive: { class: "bg-slate-500/20 text-slate-300 border-slate-500/40", label: "Inactive", icon: <XCircle className="w-3 h-3" /> },
+      active: { class: "bg-emerald-500/20 text-black-300 border-emerald-500/40", label: "Active", icon: <Zap className="w-3 h-3" /> },
+      expired: { class: "bg-red-500/20 text-black-300 border-red-500/40", label: "Expired", icon: <XCircle className="w-3 h-3" /> },
+      awaiting_approval: { class: "bg-yellow-500/20 text-black-300 border-yellow-500/40", label: "Awaiting Approval", icon: <Clock className="w-3 h-3" /> },
+      inactive: { class: "bg-slate-500/20 text-black-300 border-slate-500/40", label: "Inactive", icon: <XCircle className="w-3 h-3" /> },
     };
     const c = map[status] || map.active;
 

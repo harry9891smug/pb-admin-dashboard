@@ -1,4 +1,5 @@
 "use client";
+import { Copy, ExternalLink, Image as ImageIcon, Pencil, Trash2, Eye } from "lucide-react";
 
 import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -40,6 +41,19 @@ const emptyForm: FormState = {
 
 export default function TemplateImagesPage() {
   const router = useRouter();
+const shortUrl = (u: string) => (u.length > 48 ? u.slice(0, 48) + "..." : u);
+
+const copyText = async (txt: string) => {
+  try {
+    await navigator.clipboard.writeText(txt);
+    toast.success("Copied");
+  } catch {
+    toast.error("Copy failed");
+  }
+};
+const [previewOpen, setPreviewOpen] = useState(false);
+const [previewUrl, setPreviewUrl] = useState<string>("");
+const [previewTitle, setPreviewTitle] = useState<string>("");
 
   // ✅ auth redirect
   useEffect(() => {
@@ -236,7 +250,7 @@ export default function TemplateImagesPage() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-xl font-semibold text-white">Template Images</h1>
+          <h1 className="text-xl font-semibold text-black">Template Images</h1>
           <p className="text-sm text-slate-400 mt-1">
             Manage PUBLIC/INTERNAL offer template images (with fallback rules).
           </p>
@@ -244,7 +258,7 @@ export default function TemplateImagesPage() {
 
         <button
           onClick={openCreate}
-          className="px-4 py-2 rounded-lg bg-emerald-500/15 border border-emerald-500/40 text-emerald-200 hover:bg-emerald-500/20 transition"
+          className="px-4 py-2 rounded-lg bg-emerald-500/15 border border-emerald-500/40 text-black-200 hover:bg-emerald-500/20 transition"
         >
           + Add Template Image
         </button>
@@ -366,6 +380,8 @@ export default function TemplateImagesPage() {
           <table className="w-full text-sm">
             <thead className="bg-slate-900/60">
               <tr className="text-left text-slate-300">
+                <th className="px-4 py-3">Preview</th>
+
                 <th className="px-4 py-3">ID</th>
                 <th className="px-4 py-3">Title</th>
                 <th className="px-4 py-3">Source</th>
@@ -392,55 +408,136 @@ export default function TemplateImagesPage() {
                 </tr>
               ) : (
                 items.map((r) => (
-                  <tr key={r.id} className="text-slate-200">
-                    <td className="px-4 py-3">{r.id}</td>
-                    <td className="px-4 py-3">
-                      <div className="font-medium text-white">{r.title}</div>
-                      <div className="text-xs text-slate-500 break-all">{r.image_url}</div>
-                      {r.festival_category ? (
-                        <div className="text-xs text-slate-400 mt-1">
-                          Festival: <span className="text-slate-200">{r.festival_category}</span>
-                        </div>
-                      ) : null}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span
-                        className={
-                          r.source_type === "PUBLIC"
-                            ? "inline-flex px-2 py-1 rounded-md text-xs border border-emerald-500/40 bg-emerald-500/10 text-emerald-200"
-                            : "inline-flex px-2 py-1 rounded-md text-xs border border-purple-500/40 bg-purple-500/10 text-purple-200"
-                        }
-                      >
-                        {r.source_type}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">{r.business_category_id}</td>
-                    <td className="px-4 py-3">{r.fallback_image_id ?? "-"}</td>
-                    <td className="px-4 py-3">{r.usage_count ?? 0}</td>
-                    <td className="px-4 py-3">
-                      {r.is_active ? (
-                        <span className="text-emerald-300">Yes</span>
-                      ) : (
-                        <span className="text-rose-300">No</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex justify-end gap-2">
-                        <button
-                          onClick={() => openEdit(r.id)}
-                          className="px-3 py-1.5 rounded-lg border border-slate-800 bg-slate-900 text-slate-200 hover:bg-slate-800 transition"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => onDeactivate(r.id)}
-                          className="px-3 py-1.5 rounded-lg border border-rose-500/40 bg-rose-500/10 text-rose-200 hover:bg-rose-500/15 transition"
-                        >
-                          Deactivate
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
+         <tr key={r.id} className="text-slate-200 hover:bg-slate-900/40 transition">
+  {/* Preview */}
+  <td className="px-4 py-4 align-top">
+    <button
+      onClick={() => {
+        setPreviewUrl(r.image_url);
+        setPreviewTitle(r.title);
+        setPreviewOpen(true);
+      }}
+      className="group relative h-14 w-20 overflow-hidden rounded-xl border border-slate-800 bg-slate-900"
+      title="Preview"
+    >
+      <img
+        src={r.image_url}
+        alt={r.title}
+        className="h-full w-full object-cover opacity-90 group-hover:opacity-100 transition"
+        onError={(e) => {
+          (e.currentTarget as HTMLImageElement).style.display = "none";
+        }}
+      />
+      <div className="absolute inset-0 flex items-center justify-center">
+        <span className="inline-flex items-center gap-1 rounded-lg bg-black/40 px-2 py-1 text-[11px] text-white">
+          <Eye className="h-3 w-3" /> View
+        </span>
+      </div>
+    </button>
+  </td>
+
+  {/* ID */}
+  <td className="px-4 py-4 align-top font-medium text-slate-100">{r.id}</td>
+
+  {/* Title */}
+  <td className="px-4 py-4 align-top">
+    <div className="font-semibold text-black">{r.title}</div>
+
+    <div className="mt-2 flex items-center gap-2 flex-wrap">
+      <span
+        className={
+          r.source_type === "PUBLIC"
+            ? "inline-flex px-2.5 py-1 rounded-full text-xs border border-emerald-500/40 bg-emerald-500/10 text-black-200"
+            : "inline-flex px-2.5 py-1 rounded-full text-xs border border-purple-500/40 bg-purple-500/10 text-black-200"
+        }
+      >
+        {r.source_type}
+      </span>
+
+      {r.festival_category ? (
+        <span className="inline-flex px-2.5 py-1 rounded-full text-xs border border-slate-700 bg-slate-900 text-black-200">
+          {r.festival_category}
+        </span>
+      ) : null}
+    </div>
+
+    <div className="mt-2 flex items-center gap-2">
+      <span className="text-xs text-slate-400 break-all">{shortUrl(r.image_url)}</span>
+
+      <button
+        onClick={() => copyText(r.image_url)}
+        className="inline-flex items-center gap-1 rounded-lg border border-slate-800 bg-slate-900 px-2 py-1 text-xs text-slate-200 hover:bg-slate-800"
+      >
+        <Copy className="h-3.5 w-3.5" /> Copy
+      </button>
+
+      <a
+        href={r.image_url}
+        target="_blank"
+        rel="noreferrer"
+        className="inline-flex items-center gap-1 rounded-lg border border-slate-800 bg-slate-900 px-2 py-1 text-xs text-slate-200 hover:bg-slate-800"
+      >
+        <ExternalLink className="h-3.5 w-3.5" /> Open
+      </a>
+    </div>
+  </td>
+
+  {/* Source */}
+  <td className="px-4 py-4 align-top">
+    <span
+      className={
+        r.source_type === "PUBLIC"
+          ? "inline-flex px-2 py-1 rounded-md text-xs border border-emerald-500/40 bg-emerald-500/10 text-black-200"
+          : "inline-flex px-2 py-1 rounded-md text-xs border border-purple-500/40 bg-purple-500/10 text-black-200"
+      }
+    >
+      {r.source_type}
+    </span>
+  </td>
+
+  {/* BC ID */}
+  <td className="px-4 py-4 align-top">{r.business_category_id}</td>
+
+  {/* Fallback */}
+  <td className="px-4 py-4 align-top">{r.fallback_image_id ?? "-"}</td>
+
+  {/* Usage */}
+  <td className="px-4 py-4 align-top">{r.usage_count ?? 0}</td>
+
+  {/* Active */}
+  <td className="px-4 py-4 align-top">
+    {r.is_active ? (
+      <span className="inline-flex px-2 py-1 rounded-md text-xs border border-emerald-500/30 bg-emerald-500/10 text-black-200">
+        Yes
+      </span>
+    ) : (
+      <span className="inline-flex px-2 py-1 rounded-md text-xs border border-rose-500/30 bg-rose-500/10 text-black-200">
+        No
+      </span>
+    )}
+  </td>
+
+  {/* Actions */}
+  <td className="px-4 py-4 align-top">
+    <div className="flex justify-end gap-2">
+      <button
+        onClick={() => openEdit(r.id)}
+        className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-800 bg-slate-900 text-black-200 hover:bg-slate-800 transition"
+      >
+        <Pencil className="h-4 w-4" /> Edit
+      </button>
+
+      <button
+        onClick={() => onDeactivate(r.id)}
+        className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-rose-500/40 bg-rose-500/10 text-black-200 hover:bg-rose-500/15 transition"
+      >
+        <Trash2 className="h-4 w-4" /> Deactivate
+      </button>
+    </div>
+  </td>
+</tr>
+
+
                 ))
               )}
             </tbody>
@@ -479,7 +576,7 @@ export default function TemplateImagesPage() {
           <div className="w-full max-w-2xl bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden">
             <div className="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
               <div>
-                <div className="text-white font-semibold">
+                <div className="text-black font-semibold">
                   {editingId ? `Edit Template Image #${editingId}` : "Add Template Image"}
                 </div>
                 <div className="text-xs text-slate-500 mt-1">
@@ -625,6 +722,53 @@ export default function TemplateImagesPage() {
           </div>
         </div>
       ) : null}
+
+      {previewOpen ? (
+  <div className="fixed inset-0 z-[60] bg-black/70 flex items-center justify-center p-4">
+    <div className="w-full max-w-3xl rounded-2xl border border-slate-800 bg-slate-950 overflow-hidden">
+      <div className="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
+        <div className="text-white font-semibold flex items-center gap-2">
+          <ImageIcon className="h-4 w-4 text-slate-300" />
+          Preview: <span className="text-slate-200">{previewTitle}</span>
+        </div>
+        <button
+          onClick={() => setPreviewOpen(false)}
+          className="px-3 py-1.5 rounded-lg border border-slate-800 bg-slate-900 text-slate-200 hover:bg-slate-800"
+        >
+          Close
+        </button>
+      </div>
+
+      <div className="p-5">
+        <div className="rounded-xl border border-slate-800 bg-slate-900/40 overflow-hidden">
+          <img
+            src={previewUrl}
+            alt={previewTitle}
+            className="w-full max-h-[70vh] object-contain bg-black"
+          />
+        </div>
+
+        <div className="mt-3 flex justify-end gap-2">
+          <button
+            onClick={() => copyText(previewUrl)}
+            className="px-3 py-2 rounded-xl border border-slate-800 bg-slate-900 text-slate-200 hover:bg-slate-800"
+          >
+            Copy URL
+          </button>
+          <a
+            href={previewUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="px-3 py-2 rounded-xl border border-slate-800 bg-slate-900 text-slate-200 hover:bg-slate-800"
+          >
+            Open in new tab
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+) : null}
+
     </div>
   );
 }

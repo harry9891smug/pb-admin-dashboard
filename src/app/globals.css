@@ -66,7 +66,7 @@ body {
 
 /* Main backgrounds */
 .bg-slate-950 { background-color: #f5f5f6; } /* page background */
-.bg-slate-900 { background-color: #ffffff; } /* cards / header */
+.bg-slate-900 { background-color: color-mix(in oklab, var(--color-purple-500) 20%, transparent); } /* cards / header */
 .bg-slate-800 { background-color: #f3f4f6; } /* subtle surfaces */
 
 /* Semi-transparent backgrounds (with /xx) used on login + cards */
