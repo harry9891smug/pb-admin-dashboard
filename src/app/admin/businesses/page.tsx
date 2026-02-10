@@ -622,7 +622,7 @@ const stateOptions = useMemo(() => {
         ownerUserId: businessForm.ownerUserId || 0,
         name: businessForm.name.trim(),
         businessname: businessForm.businessname.trim(),
-        category: Number(businessForm.category),
+        category: businessForm.category.trim(),
         address: businessForm.address.trim(),
         address1: businessForm.address1.trim() || undefined,
         state: businessForm.state.trim(),
@@ -1390,7 +1390,7 @@ const stateOptions = useMemo(() => {
                   onChange={(v) => setEditBizForm((p) => ({ ...p, category: v }))}
                   options={[
                     { value: "", label: categoriesLoading ? "Loading..." : "Select category" },
-                    ...categories.map((c) => ({ value: c.name, label: c.name })),
+                    ...categories.map((c) => ({ value: String(c.id), label: c.name })),
                   ]}
                   disabled={categoriesLoading}
                 />
