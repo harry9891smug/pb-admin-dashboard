@@ -55,6 +55,7 @@ const sections: Section[] = [
     items: [
       { href: "/admin/invoices", label: "Invoices", icon: Receipt },
       { href: "/admin/subscriptions", label: "Subscriptions", icon: Wallet },
+      { href: "/admin/billing", label: "Billing Management", icon: CreditCard }, 
       { href: "/admin/payments", label: "Payments", icon: CreditCard },
     ],
   },
