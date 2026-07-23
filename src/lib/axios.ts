@@ -2,7 +2,7 @@ import axios from "axios";
 import { getAuthToken, clearAuth } from "./auth";
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000/";
+  process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.promobandhu.com/";
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -21,22 +21,20 @@ apiClient.interceptors.request.use((config) => {
 
 let isRedirecting = false;
 
-// ✅ Auto logout + redirect on 401/403
+// ✅ Auto logout + redirect on 401 only (not 403 - permission error)
 apiClient.interceptors.response.use(
   (res) => res,
   (error) => {
     const status = error?.response?.status;
 
-    if ((status === 401 || status === 403) && typeof window !== "undefined") {
-      // ✅ clear everything
+    if (status === 401 && typeof window !== "undefined") {
       clearAuth();
       localStorage.removeItem("pb_admin_refresh_token");
       localStorage.removeItem("pb_admin_user");
 
-      // ✅ prevent toast loop / multi redirect
       if (!isRedirecting) {
         isRedirecting = true;
-        window.location.href = "/login";
+        window.location.href = "/admin/login";
       }
     }
 

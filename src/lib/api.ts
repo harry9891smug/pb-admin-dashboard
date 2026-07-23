@@ -157,7 +157,12 @@ export const adminLogin = async (input: AdminLoginInput): Promise<{ success: boo
   try {
     console.log("🔐 Attempting login with:", { email: input.email });
     
-    const res = await apiClient.post<LoginResponse>("/admin/login", input);
+    const res = await apiClient.post<LoginResponse>("/identity/login", {
+      application: "promobandhu_support_frontend",
+      authType: "password",
+      identifier: input.email,
+      password: input.password,
+    });
     
     const { accessToken, refreshToken, user } = res.data;
     
