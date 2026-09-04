@@ -8,6 +8,7 @@ export * from "./api/admin/team";
 export * from "./api/admin/templateImages";
 export * from "./api/admin/sms";
 export * from "./api/admin/subscriptions";
+export * from "./api/admin/testAccounts";
 
 const unwrapList = <T = any>(res: any): T[] => {
   // Supports: res.data.items, res.data.data, res.data.data.items

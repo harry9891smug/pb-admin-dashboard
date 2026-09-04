@@ -15,6 +15,7 @@ import {
   ImagesIcon,
   MessageCircle,
   MessageCircleCodeIcon,
+  FlaskConical,
 } from "lucide-react";
 
 // Single source of truth for every navigable admin page — Sidebar renders it
@@ -81,6 +82,13 @@ export const navSections: NavSection[] = [
     items: [
       { href: "/admin/sms/usage/businesses", label: "SMS Usage (Businesses)", icon: MessageCircleCodeIcon, permission: "business.view", keywords: ["sms", "messages"] },
       { href: "/admin/sms/usage/monthly", label: "SMS Usage (Monthly)", icon: MessageCircle, permission: "business.view", keywords: ["sms", "messages"] },
+    ],
+  },
+  {
+    key: "support-tools",
+    title: "Support Tools",
+    items: [
+      { href: "/admin/test-accounts", label: "Test Accounts", icon: FlaskConical, permission: "test_account.view", keywords: ["reviewer", "demo", "qa", "trial", "google review"] },
     ],
   },
 ];
