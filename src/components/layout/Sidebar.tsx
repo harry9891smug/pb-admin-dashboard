@@ -5,79 +5,8 @@ import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
-import {
-  ChevronDown,
-  LayoutDashboard,
-  ShieldCheck,
-  KeyRound,
-  Users,
-  Briefcase,
-  Building2,
-  BadgePercent,
-  Layers3,
-  Megaphone,
-  Tags,
-  Receipt,
-  CreditCard,
-  Wallet,
-  ImagesIcon,
-  MessageCircle,
-  MessageCircleCodeIcon,
-} from "lucide-react";
-
-// permission: the RBAC key this link's page checks via ProtectedRoute.
-// undefined means every logged-in admin sees it (currently just Dashboard).
-type LinkItem = { href: string; label: string; icon: any; permission?: string };
-type Section = { key: string; title: string; items: LinkItem[] };
-
-const sections: Section[] = [
-  {
-    key: "access",
-    title: "Access Control",
-    items: [
-      { href: "/admin/access/permissions", label: "Permissions", icon: KeyRound, permission: "permission.view_permission" },
-      { href: "/admin/access/groups", label: "Groups", icon: ShieldCheck, permission: "role.maintain_role" },
-      { href: "/admin/access/job-roles", label: "Job Roles", icon: Briefcase, permission: "access.view_job_roles" },
-      { href: "/admin/team", label: "Team Members", icon: Users, permission: "team.view" },
-    ],
-  },
-  {
-    key: "business",
-    title: "Business & Billing",
-    items: [
-      { href: "/admin/businesses", label: "Businesses", icon: Building2, permission: "business.view" },
-      { href: "/admin/offers", label: "Offers", icon: BadgePercent, permission: "offer.view" },
-      { href: "/admin/plans", label: "Plans", icon: Layers3, permission: "subscription.view" },
-      { href: "/admin/advertisements", label: "Advertisements", icon: Megaphone, permission: "offer.view" },
-      { href: "/admin/categories", label: "Categories", icon: Tags, permission: "business.view" },
-    ],
-  },
-  {
-    key: "finance",
-    title: "Finance",
-    items: [
-      { href: "/admin/invoices", label: "Invoices", icon: Receipt, permission: "invoice.view" },
-      { href: "/admin/subscriptions", label: "Subscriptions", icon: Wallet, permission: "subscription.view" },
-      { href: "/admin/billing", label: "Billing Management", icon: CreditCard, permission: "subscription.view" },
-      { href: "/admin/payments", label: "Payments", icon: CreditCard, permission: "invoice.view" },
-    ],
-  },
-   {
-    key: "template-images",
-    title: "Template Images",
-    items: [
-      { href: "/admin/template-images", label: "Template Images", icon: ImagesIcon, permission: "offer.view" },
-    ],
-  },
-  {
-    key: "sms",
-    title: "SMS Logs",
-    items: [
-       { href: "/admin/sms/usage/businesses", label: "SMS Usage (Businesses)", icon: MessageCircleCodeIcon, permission: "business.view" },
-  { href: "/admin/sms/usage/monthly", label: "SMS Usage (Monthly)", icon: MessageCircle, permission: "business.view" },
-    ],
-  },
-];
+import { ChevronDown, LayoutDashboard } from "lucide-react";
+import { navSections as sections, type NavItem as LinkItem } from "@/lib/navigation";
 
 export default function Sidebar() {
   const pathname = usePathname();

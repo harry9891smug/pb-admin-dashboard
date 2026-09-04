@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { useAuth } from '@/contexts/AuthContext';
+import GlobalSearch from "./GlobalSearch";
 
 export default function Topbar() {
   const pathname = usePathname();
@@ -24,9 +25,13 @@ export default function Topbar() {
   return (
     <header className="sticky top-0 z-40 h-16 flex items-center justify-between border-b border-slate-800 bg-slate-750/80 backdrop-blur-lg px-6">
       <div className="flex items-center gap-3">
-        <h1 className="text-lg font-semibold tracking-tight text-slate-100">
+        <h1 className="text-lg font-semibold tracking-tight text-slate-100 hidden lg:block">
           {getTitle()}
         </h1>
+      </div>
+
+      <div className="flex-1 flex justify-center px-4">
+        <GlobalSearch />
       </div>
 
       <div className="flex items-center gap-4">

@@ -12,7 +12,6 @@ import {
   rejectOffer,
   createOffer,
   getBusinesses,
-  getOffersWithFallback,
   uploadOfferImage,
   CreateOfferInput,
   Business,
@@ -138,12 +137,11 @@ export default function OffersPage() {
 
       params.limit = 50;
 
-      let data;
-      try {
-        data = await getOffers(params);
-      } catch {
-        data = await getOffersWithFallback(params);
-      }
+      // Was falling back to 3 hardcoded fake offers on any error via
+      // getOffersWithFallback — that masked real failures instead of
+      // surfacing them. Let getOffers() throw straight to the outer
+      // catch below, which already sets error state + toasts properly.
+      const data = await getOffers(params);
 
       const formattedOffers = data.items.map((apiOffer: any) => {
         let frontendStatus: "active" | "expired" | "awaiting_approval" | "inactive";
@@ -169,8 +167,11 @@ export default function OffersPage() {
           discount,
           startDate: apiOffer.startDate,
           endDate: apiOffer.endDate,
-          views: Math.floor(Math.random() * 1000),
-          redemptions: Math.floor(Math.random() * 100),
+          // Backend doesn't track views/redemptions per offer yet — this used
+          // to be Math.random(), which showed a different fake number on
+          // every reload. 0 until that's actually built server-side.
+          views: 0,
+          redemptions: 0,
           category: apiOffer.business?.name ?? "N/A",
           imageUrl: apiOffer.imageUrl ?? null,
           originalStatus: apiOffer.status,
