@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { adminSmsUsageBusinesses } from "@/lib/api/admin/sms";
 import { RefreshCw } from "lucide-react";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
 function currentMonthYYYYMM() {
   const d = new Date();
@@ -47,6 +48,7 @@ export default function SmsUsageBusinessesPage() {
   }, [rows]);
 
   return (
+    <ProtectedRoute requiredPermission="business.view">
     <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -140,6 +142,7 @@ export default function SmsUsageBusinessesPage() {
         </table>
       </div>
     </div>
+    </ProtectedRoute>
   );
 }
 

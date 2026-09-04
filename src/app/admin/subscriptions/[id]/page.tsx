@@ -10,6 +10,7 @@ import {
   formatSubscriptionStatus,
 } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
 type SubDetail = {
   id: number;
@@ -96,6 +97,7 @@ export default function SubscriptionDetailPage() {
   };
 
   return (
+    <ProtectedRoute requiredPermission="subscription.view">
     <div className="p-6 space-y-6">
       {/* Top bar */}
       <div className="flex items-center justify-between gap-4">
@@ -213,6 +215,7 @@ export default function SubscriptionDetailPage() {
         </>
       )}
     </div>
+    </ProtectedRoute>
   );
 }
 

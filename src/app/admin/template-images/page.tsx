@@ -15,6 +15,7 @@ import {
   type AdminTemplateImage,
   type TemplateSourceType,
 } from "@/lib/api";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
 type FormState = {
   id?: number;
@@ -246,6 +247,7 @@ const [previewTitle, setPreviewTitle] = useState<string>("");
   };
 
   return (
+    <ProtectedRoute requiredPermission="offer.view">
     <div className="p-6 space-y-5">
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
@@ -770,5 +772,6 @@ const [previewTitle, setPreviewTitle] = useState<string>("");
 ) : null}
 
     </div>
+    </ProtectedRoute>
   );
 }

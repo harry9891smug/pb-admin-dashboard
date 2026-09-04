@@ -198,7 +198,7 @@ export default function GroupsPage() {
 
   /* ---------------- UI ---------------- */
   return (
-    <ProtectedRoute>
+    <ProtectedRoute requiredPermission="role.maintain_role">
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">

@@ -17,6 +17,7 @@ import {
 } from "@/lib/api/admin/billing";
 import { cn } from "@/lib/utils";
 import { toastSuccess, toastError } from "@/lib/toast";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
 // ─── Status config ────────────────────────────────────────────────────────
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; dot: string }> = {
@@ -87,15 +88,18 @@ export default function BillingDetailPage() {
   const statusCfg = STATUS_CONFIG[sub?.status ?? ""] ?? STATUS_CONFIG.inactive;
 
   if (loading) return (
+    <ProtectedRoute requiredPermission="subscription.view">
     <div className="min-h-screen flex items-center justify-center">
       <div className="flex flex-col items-center gap-3">
         <div className="w-8 h-8 border-2 border-slate-600 border-t-slate-300 rounded-full animate-spin" />
         <span className="text-slate-500 text-sm">Loading subscription...</span>
       </div>
     </div>
+    </ProtectedRoute>
   );
 
   if (!sub) return (
+    <ProtectedRoute requiredPermission="subscription.view">
     <div className="min-h-screen flex items-center justify-center">
       <div className="text-center">
         <div className="text-4xl mb-3">🔍</div>
@@ -103,9 +107,11 @@ export default function BillingDetailPage() {
         <button onClick={() => router.back()} className="mt-4 text-sm text-slate-500 hover:text-slate-300 underline">Go back</button>
       </div>
     </div>
+    </ProtectedRoute>
   );
 
   return (
+    <ProtectedRoute requiredPermission="subscription.view">
     <div className="min-h-screen p-6 space-y-5" style={{ background: "transparent" }}>
 
       {/* ── Header ── */}
@@ -269,6 +275,7 @@ export default function BillingDetailPage() {
         </Sheet>
       )}
     </div>
+    </ProtectedRoute>
   );
 }
 

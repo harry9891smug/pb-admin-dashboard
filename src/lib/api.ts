@@ -34,6 +34,11 @@ export interface User {
   email: string;
   mobile: string;
   role: string;
+  // Granular RBAC keys (e.g. "business.view", "subscription.update") — the
+  // backend has enforced these on every /admin/* route for a while, but
+  // nothing here ever read them, so every logged-in admin saw every page.
+  // See ProtectedRoute + Sidebar, which now gate on this.
+  permissions: string[];
 }
 
 export interface BusinessOwner {

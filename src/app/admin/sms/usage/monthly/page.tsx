@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { adminSmsUsageMonthly } from "@/lib/api/admin/sms";
 import { RefreshCw } from "lucide-react";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
 export default function SmsUsageMonthlyPage() {
   const [rows, setRows] = useState<any[]>([]);
@@ -42,6 +43,7 @@ export default function SmsUsageMonthlyPage() {
   }, [rows]);
 
   return (
+    <ProtectedRoute requiredPermission="business.view">
     <div className="p-6 space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -121,6 +123,7 @@ export default function SmsUsageMonthlyPage() {
         </table>
       </div>
     </div>
+    </ProtectedRoute>
   );
 }
 

@@ -9,6 +9,7 @@ import {
   formatSubscriptionStatus,
 } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
 type Row = {
   id: number;
@@ -95,6 +96,7 @@ const fetchData = async () => {
   };
 
   return (
+    <ProtectedRoute requiredPermission="subscription.view">
     <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex items-end justify-between gap-4">
@@ -317,6 +319,7 @@ const fetchData = async () => {
         </button>
       </div>
     </div>
+    </ProtectedRoute>
   );
 }
 

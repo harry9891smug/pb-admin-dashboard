@@ -14,6 +14,7 @@ import {
 } from "@/lib/api/admin/billing";
 import { cn } from "@/lib/utils";
 import { toastSuccess, toastError } from "@/lib/toast";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
 const PAGE_SIZE = 15;
 
@@ -77,6 +78,7 @@ export default function BillingSubscriptionsPage() {
   };
 
   return (
+    <ProtectedRoute requiredPermission="subscription.view">
     <div className="p-6 space-y-5">
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -214,6 +216,7 @@ export default function BillingSubscriptionsPage() {
         </div>
       )}
     </div>
+    </ProtectedRoute>
   );
 }
 

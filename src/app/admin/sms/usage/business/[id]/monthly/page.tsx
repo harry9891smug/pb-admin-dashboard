@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { adminSmsUsageBusinessMonthly } from "@/lib/api/admin/sms";
 import { RefreshCw } from "lucide-react";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
 export default function SmsUsageBusinessMonthlyPage() {
   const params = useParams<{ businessId: string }>();
@@ -46,6 +47,7 @@ export default function SmsUsageBusinessMonthlyPage() {
   }, [rows]);
 
   return (
+    <ProtectedRoute requiredPermission="business.view">
     <div className="p-6 space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -125,6 +127,7 @@ export default function SmsUsageBusinessMonthlyPage() {
         </table>
       </div>
     </div>
+    </ProtectedRoute>
   );
 }
 

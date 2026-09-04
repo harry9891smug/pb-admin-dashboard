@@ -106,7 +106,7 @@ export default function PermissionsPage() {
   };
 
   return (
-    <ProtectedRoute>
+    <ProtectedRoute requiredPermission="permission.view_permission">
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">

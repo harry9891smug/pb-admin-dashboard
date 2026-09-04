@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   ChevronDown,
   LayoutDashboard,
@@ -24,7 +25,9 @@ import {
   MessageCircleCodeIcon,
 } from "lucide-react";
 
-type LinkItem = { href: string; label: string; icon: any };
+// permission: the RBAC key this link's page checks via ProtectedRoute.
+// undefined means every logged-in admin sees it (currently just Dashboard).
+type LinkItem = { href: string; label: string; icon: any; permission?: string };
 type Section = { key: string; title: string; items: LinkItem[] };
 
 const sections: Section[] = [
@@ -32,52 +35,67 @@ const sections: Section[] = [
     key: "access",
     title: "Access Control",
     items: [
-      { href: "/admin/access/permissions", label: "Permissions", icon: KeyRound },
-      { href: "/admin/access/groups", label: "Groups", icon: ShieldCheck },
-      { href: "/admin/access/job-roles", label: "Job Roles", icon: Briefcase },
-      { href: "/admin/team", label: "Team Members", icon: Users },
+      { href: "/admin/access/permissions", label: "Permissions", icon: KeyRound, permission: "permission.view_permission" },
+      { href: "/admin/access/groups", label: "Groups", icon: ShieldCheck, permission: "role.maintain_role" },
+      { href: "/admin/access/job-roles", label: "Job Roles", icon: Briefcase, permission: "access.view_job_roles" },
+      { href: "/admin/team", label: "Team Members", icon: Users, permission: "team.view" },
     ],
   },
   {
     key: "business",
     title: "Business & Billing",
     items: [
-      { href: "/admin/businesses", label: "Businesses", icon: Building2 },
-      { href: "/admin/offers", label: "Offers", icon: BadgePercent },
-      { href: "/admin/plans", label: "Plans", icon: Layers3 },
-      { href: "/admin/advertisements", label: "Advertisements", icon: Megaphone },
-      { href: "/admin/categories", label: "Categories", icon: Tags },
+      { href: "/admin/businesses", label: "Businesses", icon: Building2, permission: "business.view" },
+      { href: "/admin/offers", label: "Offers", icon: BadgePercent, permission: "offer.view" },
+      { href: "/admin/plans", label: "Plans", icon: Layers3, permission: "subscription.view" },
+      { href: "/admin/advertisements", label: "Advertisements", icon: Megaphone, permission: "offer.view" },
+      { href: "/admin/categories", label: "Categories", icon: Tags, permission: "business.view" },
     ],
   },
   {
     key: "finance",
     title: "Finance",
     items: [
-      { href: "/admin/invoices", label: "Invoices", icon: Receipt },
-      { href: "/admin/subscriptions", label: "Subscriptions", icon: Wallet },
-      { href: "/admin/billing", label: "Billing Management", icon: CreditCard }, 
-      { href: "/admin/payments", label: "Payments", icon: CreditCard },
+      { href: "/admin/invoices", label: "Invoices", icon: Receipt, permission: "invoice.view" },
+      { href: "/admin/subscriptions", label: "Subscriptions", icon: Wallet, permission: "subscription.view" },
+      { href: "/admin/billing", label: "Billing Management", icon: CreditCard, permission: "subscription.view" },
+      { href: "/admin/payments", label: "Payments", icon: CreditCard, permission: "invoice.view" },
     ],
   },
    {
     key: "template-images",
     title: "Template Images",
     items: [
-      { href: "/admin/template-images", label: "Template Images", icon: ImagesIcon },
+      { href: "/admin/template-images", label: "Template Images", icon: ImagesIcon, permission: "offer.view" },
     ],
   },
   {
     key: "sms",
     title: "SMS Logs",
     items: [
-       { href: "/admin/sms/usage/businesses", label: "SMS Usage (Businesses)", icon: MessageCircleCodeIcon },
-  { href: "/admin/sms/usage/monthly", label: "SMS Usage (Monthly)", icon: MessageCircle },
+       { href: "/admin/sms/usage/businesses", label: "SMS Usage (Businesses)", icon: MessageCircleCodeIcon, permission: "business.view" },
+  { href: "/admin/sms/usage/monthly", label: "SMS Usage (Monthly)", icon: MessageCircle, permission: "business.view" },
     ],
   },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const { user } = useAuth();
+  const permissions = useMemo(() => user?.permissions ?? [], [user]);
+
+  const canSee = (item: LinkItem) => !item.permission || permissions.includes(item.permission);
+
+  // Sections filtered down to only the items this user has permission for —
+  // a section with nothing left is dropped entirely rather than shown empty.
+  const visibleSections = useMemo(
+    () =>
+      sections
+        .map((s) => ({ ...s, items: s.items.filter(canSee) }))
+        .filter((s) => s.items.length > 0),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [permissions]
+  );
 
   const isActive = (href: string) =>
     pathname === href || pathname.startsWith(href + "/") || pathname.startsWith(href);
@@ -85,12 +103,12 @@ export default function Sidebar() {
   // ✅ auto-open section containing current route
   const defaultOpen = useMemo(() => {
     const open: Record<string, boolean> = {};
-    for (const s of sections) {
+    for (const s of visibleSections) {
       open[s.key] = s.items.some((it) => isActive(it.href));
     }
     return open;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname]);
+  }, [pathname, visibleSections]);
 
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
 
@@ -131,7 +149,7 @@ export default function Sidebar() {
 
         {/* Sections (collapsible) */}
         <div className="mt-4 space-y-3">
-          {sections.map((section) => {
+          {visibleSections.map((section) => {
             const open = !!openSections[section.key];
 
             return (

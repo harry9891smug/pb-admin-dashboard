@@ -6,6 +6,7 @@ import {
   adminSmsUsageMonthly,
 } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
 export default function AdminSmsPage() {
   const [tab, setTab] = useState<"businesses" | "monthly">("businesses");
@@ -41,6 +42,7 @@ export default function AdminSmsPage() {
   };
 
   return (
+    <ProtectedRoute requiredPermission="business.view">
     <div className="p-6 space-y-6">
       {/* Header */}
       <div>
@@ -141,6 +143,7 @@ export default function AdminSmsPage() {
         </table>
       </div>
     </div>
+    </ProtectedRoute>
   );
 }
 
