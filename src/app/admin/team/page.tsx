@@ -14,6 +14,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import Pagination from "@/components/ui/Pagination";
 import { toast } from "react-hot-toast";
 
 import {
@@ -37,6 +38,9 @@ export default function TeamMembersPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [searchTerm, setSearchTerm] = useState("");
+  const [page, setPage] = useState(1);
+  const [totalFiltered, setTotalFiltered] = useState(0);
+  const PAGE_SIZE = 20;
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -65,12 +69,17 @@ export default function TeamMembersPage() {
       setError(null);
 
       const [teamRes, jobRolesRes, groupsRes] = await Promise.all([
-        adminListTeamMembers({ limit: 100, offset: 0 }),
+        adminListTeamMembers({
+          search: searchTerm.trim() || undefined,
+          limit: PAGE_SIZE,
+          offset: (page - 1) * PAGE_SIZE,
+        }),
         adminListJobRoles(),
         adminListGroups(),
       ]);
 
       setItems(teamRes.items || []);
+      setTotalFiltered(teamRes.total ?? (teamRes.items || []).length);
       setJobRoles(jobRolesRes);
       setGroups(groupsRes);
     } catch (e: any) {
@@ -83,24 +92,25 @@ export default function TeamMembersPage() {
 
   useEffect(() => {
     fetchData();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page]);
 
-  /* ---------------- Derived ---------------- */
-  const filtered = useMemo(() => {
-    const q = searchTerm.toLowerCase().trim();
-    if (!q) return items;
+  useEffect(() => {
+    // Free-text search used to filter the already-loaded page client-side —
+    // now it re-queries the backend (debounced) and resets to page 1.
+    const t = setTimeout(() => {
+      if (page !== 1) {
+        setPage(1);
+      } else {
+        fetchData();
+      }
+    }, 400);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchTerm]);
 
-    return items.filter((u) => {
-      const email = (u.email || "").toLowerCase();
-      const mob = (u.mobile || "").toLowerCase();
-      const jr = (u.adminJobRole?.name || "").toLowerCase();
-      return email.includes(q) || mob.includes(q) || jr.includes(q);
-    });
-  }, [items, searchTerm]);
-
-  const stats = useMemo(() => {
-    return { total: items.length };
-  }, [items]);
+  const filtered = items;
+  const stats = { total: totalFiltered };
 
   /* ---------------- Helpers ---------------- */
   const openCreate = () => {
@@ -354,6 +364,17 @@ export default function TeamMembersPage() {
             ))
           )}
         </div>
+
+        {totalFiltered > 0 && (
+          <Pagination
+            page={page}
+            totalPages={Math.max(1, Math.ceil(totalFiltered / PAGE_SIZE))}
+            total={totalFiltered}
+            loading={loading}
+            onPageChange={setPage}
+            itemLabel="team members"
+          />
+        )}
 
         {/* Modal */}
         {(isCreateOpen || isEditOpen) && (

@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import Pagination from "@/components/ui/Pagination";
 import { toast } from "react-hot-toast";
 import {
   Plus,
@@ -115,6 +116,16 @@ export default function AdvertisementsPage() {
       return matchesSearch && matchesStatus;
     });
   }, [items, searchTerm, statusFilter]);
+
+  // Full list is fetched in one shot (small, manually-curated catalog) — so
+  // pagination is client-side over the filtered results, no API round trip.
+  const PAGE_SIZE = 20;
+  const [page, setPage] = useState(1);
+  useEffect(() => setPage(1), [searchTerm, statusFilter]);
+  const paginated = useMemo(
+    () => filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
+    [filtered, page]
+  );
 
   const stats = useMemo(() => {
     const total = items.length;
@@ -432,7 +443,7 @@ export default function AdvertisementsPage() {
               </button>
             </div>
           ) : (
-            filtered.map((ad) => (
+            paginated.map((ad) => (
               <div
                 key={ad.id}
                 className="rounded-xl border border-slate-800 bg-slate-900/60 p-6 flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4"
@@ -511,6 +522,16 @@ export default function AdvertisementsPage() {
             ))
           )}
         </div>
+
+        {filtered.length > 0 && (
+          <Pagination
+            page={page}
+            totalPages={Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))}
+            total={filtered.length}
+            onPageChange={setPage}
+            itemLabel="advertisements"
+          />
+        )}
 
         {/* Modal */}
         {(isCreateOpen || isEditOpen) && (

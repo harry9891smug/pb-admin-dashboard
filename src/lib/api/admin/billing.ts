@@ -37,10 +37,32 @@ export interface BillingSubscription {
 
 // ─── GET ALL ───────────────────────────────────────────────────────────────
 
-export async function billingGetSubscriptions(): Promise<BillingSubscription[]> {
-  const res = await apiClient.get("/admin/billing/subscriptions");
-  // backend: { success: true, data: [...] }
-  return res.data?.data ?? [];
+export interface BillingSubscriptionsPage {
+  items: BillingSubscription[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export async function billingGetSubscriptions(params?: {
+  search?: string;
+  status?: string;
+  limit?: number;
+  offset?: number;
+}): Promise<BillingSubscriptionsPage> {
+  const res = await apiClient.get("/admin/billing/subscriptions", { params });
+  // backend: { success: true, data: [...], total, limit, offset }
+  return {
+    items: res.data?.data ?? [],
+    total: res.data?.total ?? (res.data?.data ?? []).length,
+    limit: res.data?.limit ?? params?.limit ?? 20,
+    offset: res.data?.offset ?? params?.offset ?? 0,
+  };
+}
+
+export async function billingGetSubscriptionById(id: number): Promise<BillingSubscription | null> {
+  const res = await apiClient.get(`/admin/billing/subscriptions/${id}`);
+  return res.data?.data ?? null;
 }
 
 // ─── SUSPEND ──────────────────────────────────────────────────────────────

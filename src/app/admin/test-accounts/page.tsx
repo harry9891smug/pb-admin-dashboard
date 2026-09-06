@@ -15,6 +15,7 @@ import {
 import { toast } from "react-hot-toast";
 
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import Pagination from "@/components/ui/Pagination";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   adminListTestAccounts,
@@ -54,6 +55,10 @@ export default function TestAccountsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState<TestAccountType | "all">("all");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "revoked">("active");
+  const [page, setPage] = useState(1);
+  const [totalFiltered, setTotalFiltered] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const PAGE_SIZE = 20;
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [extendTarget, setExtendTarget] = useState<TestAccount | null>(null);
@@ -77,10 +82,14 @@ export default function TestAccountsPage() {
       const res = await adminListTestAccounts({
         accountType: typeFilter === "all" ? undefined : typeFilter,
         status: statusFilter === "all" ? undefined : statusFilter,
-        limit: 200,
+        search: searchTerm.trim() || undefined,
+        page,
+        limit: PAGE_SIZE,
       });
 
       setItems(res.items);
+      setTotalFiltered(res.total);
+      setTotalPages(res.totalPages || 1);
     } catch (e: any) {
       setError(e.message || "Failed to load test accounts");
       toast.error(e.message || "Failed to load test accounts");
@@ -92,29 +101,23 @@ export default function TestAccountsPage() {
   useEffect(() => {
     fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [typeFilter, statusFilter]);
+  }, [typeFilter, statusFilter, page]);
 
-  /* ---------------- Derived ---------------- */
-  const filtered = useMemo(() => {
-    const q = searchTerm.toLowerCase().trim();
-    if (!q) return items;
+  useEffect(() => {
+    // Search box used to filter the already-loaded page client-side — real
+    // typing now re-queries the backend (debounced) and resets to page 1.
+    const t = setTimeout(() => {
+      if (page !== 1) {
+        setPage(1);
+      } else {
+        fetchData();
+      }
+    }, 400);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchTerm]);
 
-    return items.filter((a) => {
-      const email = (a.email || "").toLowerCase();
-      const mobile = (a.mobile || "").toLowerCase();
-      const business = (a.businessName || "").toLowerCase();
-      return email.includes(q) || mobile.includes(q) || business.includes(q);
-    });
-  }, [items, searchTerm]);
-
-  const stats = useMemo(
-    () => ({
-      total: items.length,
-      active: items.filter((a) => a.status === "active").length,
-      revoked: items.filter((a) => a.status === "revoked").length,
-    }),
-    [items]
-  );
+  const filtered = items;
 
   /* ---------------- Helpers ---------------- */
   const openCreate = () => {
@@ -262,19 +265,11 @@ export default function TestAccountsPage() {
         )}
 
         {/* Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
-            <p className="text-xs uppercase text-slate-400">Showing</p>
-            <p className="mt-2 text-2xl font-semibold">{stats.total}</p>
-          </div>
-          <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
-            <p className="text-xs uppercase text-slate-400">Active</p>
-            <p className="mt-2 text-2xl font-semibold text-emerald-400">{stats.active}</p>
-          </div>
-          <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
-            <p className="text-xs uppercase text-slate-400">Revoked</p>
-            <p className="mt-2 text-2xl font-semibold text-slate-500">{stats.revoked}</p>
-          </div>
+        <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+          <p className="text-xs uppercase text-slate-400">
+            Matching current filters ({statusFilter === "all" ? "any status" : statusFilter})
+          </p>
+          <p className="mt-2 text-2xl font-semibold">{totalFiltered}</p>
         </div>
 
         {/* Filters */}
@@ -418,6 +413,17 @@ export default function TestAccountsPage() {
             ))
           )}
         </div>
+
+        {totalFiltered > 0 && (
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            total={totalFiltered}
+            loading={loading}
+            onPageChange={setPage}
+            itemLabel="test accounts"
+          />
+        )}
 
         {/* Create modal */}
         {isCreateOpen && (

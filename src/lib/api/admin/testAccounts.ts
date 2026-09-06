@@ -49,6 +49,7 @@ export const adminListTestAccounts = async (params?: {
   status?: "active" | "revoked";
   page?: number;
   limit?: number;
+  search?: string;
 }): Promise<{ items: TestAccount[]; total: number; page: number; limit: number; totalPages: number }> => {
   const token = ensureToken();
   try {

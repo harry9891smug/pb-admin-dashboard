@@ -23,6 +23,7 @@ import {
   Image as ImageIcon,
 } from "lucide-react";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import Pagination from "@/components/ui/Pagination";
 import { toast } from "react-hot-toast";
 
 import {
@@ -306,6 +307,9 @@ export default function BusinessesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [stats, setStats] = useState({ total: 0, active: 0, pending: 0, inactive: 0 });
+  const [page, setPage] = useState(1);
+  const [totalFiltered, setTotalFiltered] = useState(0);
+  const PAGE_SIZE = 20;
   const [categories, setCategories] = useState<BusinessCategory[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
@@ -336,11 +340,13 @@ const stateOptions = useMemo(() => {
       const params: any = {};
       if (searchTerm) params.search = searchTerm;
       if (statusFilter !== "all") params.status = statusFilter;
-      params.limit = 50;
+      params.limit = PAGE_SIZE;
+      params.offset = (page - 1) * PAGE_SIZE;
 
       const data: BusinessesResponse = await getBusinesses(params);
       setBusinesses(data.items);
       setStats(data.summary);
+      setTotalFiltered(data.totalFiltered ?? data.items.length);
     } catch (err: any) {
       setError(err.message || "Failed to fetch businesses");
     } finally {
@@ -380,11 +386,15 @@ const stateOptions = useMemo(() => {
 
   useEffect(() => {
     fetchBusinesses();
-  }, []);
+  }, [page]);
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      fetchBusinesses();
+      if (page !== 1) {
+        setPage(1); // triggers the [page] effect above, which re-fetches
+      } else {
+        fetchBusinesses();
+      }
     }, 500);
     return () => clearTimeout(timeoutId);
   }, [searchTerm, statusFilter]);
@@ -872,7 +882,7 @@ const stateOptions = useMemo(() => {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <p className="text-sm text-slate-400">
-              Showing {businesses.length} businesses {loading && <span className="ml-2">• Updating...</span>}
+              Showing {businesses.length} of {totalFiltered} businesses {loading && <span className="ml-2">• Updating...</span>}
             </p>
           </div>
 
@@ -998,6 +1008,17 @@ const stateOptions = useMemo(() => {
                 </div>
               ))}
             </div>
+          )}
+
+          {totalFiltered > 0 && (
+            <Pagination
+              page={page}
+              totalPages={Math.max(1, Math.ceil(totalFiltered / PAGE_SIZE))}
+              total={totalFiltered}
+              loading={loading}
+              onPageChange={setPage}
+              itemLabel="businesses"
+            />
           )}
         </div>
 

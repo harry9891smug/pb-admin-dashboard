@@ -26,38 +26,49 @@ export default function BillingSubscriptionsPage() {
   const [statusFilter, setStatusFilter] = useState("");
   const [actionLoading, setActionLoading] = useState<number | null>(null);
   const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      const data = await billingGetSubscriptions();
-      setRows(data);
+      // Used to fetch the whole list (backend capped it at a hardcoded 100
+      // rows with no way to see past that) and re-filter/paginate it in the
+      // browser. Search, status and paging are now real backend query params.
+      const res = await billingGetSubscriptions({
+        search: search.trim() || undefined,
+        status: statusFilter || undefined,
+        limit: PAGE_SIZE,
+        offset: (page - 1) * PAGE_SIZE,
+      });
+      setRows(res.items);
+      setTotal(res.total);
     } catch (e: any) {
       toastError(e?.response?.data?.error?.message || "Failed to fetch");
       setRows([]);
+      setTotal(0);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => {
+    fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page]);
 
-  // ✅ filter
-  const filtered = rows.filter((r) => {
-    const matchStatus = statusFilter ? r.status === statusFilter : true;
-    const matchSearch = search
-      ? String(r.businessId).includes(search) ||
-        String(r.id).includes(search) ||
-        r.plan.toLowerCase().includes(search.toLowerCase()) ||
-        (r as any).business?.businessname?.toLowerCase().includes(search.toLowerCase()) ||
-        (r as any).business?.name?.toLowerCase().includes(search.toLowerCase())
-      : true;
-    return matchStatus && matchSearch;
-  });
+  useEffect(() => {
+    const t = setTimeout(() => {
+      if (page !== 1) setPage(1);
+      else fetchData();
+    }, 400);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search, statusFilter]);
 
-  // ✅ pagination
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  // The backend already applied search/status/paging — `rows` is exactly
+  // this page's matching results.
+  const paginated = rows;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   const doAction = async (id: number, action: "suspend" | "activate" | "cancel" | "grace") => {
     const labels = { suspend: "Suspend", activate: "Activate", cancel: "Cancel", grace: "Extend Grace" };
@@ -95,13 +106,13 @@ export default function BillingSubscriptionsPage() {
       <div className="flex gap-3 flex-wrap items-center">
         <input
           value={search}
-          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+          onChange={(e) => setSearch(e.target.value)}
           placeholder="Search ID, business, plan..."
           className="bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 w-64 focus:outline-none focus:border-slate-400"
         />
         <select
           value={statusFilter}
-          onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
+          onChange={(e) => setStatusFilter(e.target.value)}
           className="bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none"
         >
           <option value="">All Status</option>
@@ -116,7 +127,7 @@ export default function BillingSubscriptionsPage() {
           <option value="expired">Expired</option>
         </select>
         <span className="text-sm text-slate-400">
-          Showing {filtered.length} of {rows.length}
+          Showing {rows.length} of {total}
         </span>
       </div>
 

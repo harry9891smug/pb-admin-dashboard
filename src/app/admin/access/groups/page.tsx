@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Pagination from "@/components/ui/Pagination";
 import {
   Search,
   Plus,
@@ -77,6 +78,15 @@ export default function GroupsPage() {
     if (!q) return items;
     return items.filter((g) => (g.name || "").toLowerCase().includes(q));
   }, [items, searchTerm]);
+
+  // Fetched in one shot — pagination is client-side over the filtered list.
+  const PAGE_SIZE = 20;
+  const [page, setPage] = useState(1);
+  useEffect(() => setPage(1), [searchTerm]);
+  const paginated = useMemo(
+    () => filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
+    [filtered, page]
+  );
 
   const stats = useMemo(() => {
     return { total: items.length };
@@ -272,7 +282,7 @@ export default function GroupsPage() {
               </button>
             </div>
           ) : (
-            filtered.map((g) => (
+            paginated.map((g) => (
               <div
                 key={g.id}
                 className="rounded-xl border border-slate-800 bg-slate-900/60 p-6 flex items-center justify-between"
@@ -312,6 +322,16 @@ export default function GroupsPage() {
             ))
           )}
         </div>
+
+        {filtered.length > 0 && (
+          <Pagination
+            page={page}
+            totalPages={Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))}
+            total={filtered.length}
+            onPageChange={setPage}
+            itemLabel="groups"
+          />
+        )}
 
         {/* CREATE / EDIT MODAL */}
         {(isCreateOpen || isEditOpen) && (

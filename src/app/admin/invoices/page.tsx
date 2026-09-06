@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useState, useRef } from "react";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import Pagination from "@/components/ui/Pagination";
 import { toast } from "react-hot-toast";
 import { 
   getBusinesses, 
@@ -52,6 +53,9 @@ export default function AdminInvoicesPage() {
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [page, setPage] = useState(1);
+  const [totalFiltered, setTotalFiltered] = useState(0);
+  const PAGE_SIZE = 20;
   
   // Stats
   const [stats, setStats] = useState({
@@ -145,30 +149,30 @@ export default function AdminInvoicesPage() {
       setLoading(true);
       const res = await getAdminInvoices({
         businessId: Number(selectedBusinessId),
-        limit: 50,
-        offset: 0,
+        limit: PAGE_SIZE,
+        offset: (page - 1) * PAGE_SIZE,
+        q: searchTerm.trim() || undefined,
+        paymentStatus: statusFilter !== "all" ? statusFilter : undefined,
       });
-      
+
       const items = res.items || [];
       setInvoices(items);
-      
-      // Calculate stats
-      const total = items.length;
-      const paid = items.filter(inv => inv.paymentStatus === "paid").length;
-      const unpaid = items.filter(inv => inv.paymentStatus === "unpaid").length;
-      const partial = items.filter(inv => inv.paymentStatus === "partial").length;
-      
-      const totalAmount = items.reduce((sum, inv) => sum + parseFloat(inv.totalAmount), 0);
-      const paidAmount = items.reduce((sum, inv) => sum + parseFloat(inv.paidAmount), 0);
-      
-      setStats({
-        total,
-        paid,
-        unpaid,
-        partial,
-        totalAmount,
-        paidAmount,
-      });
+      setTotalFiltered(res.total ?? items.length);
+
+      // Counts/amounts now come from the backend's summary — computed across
+      // every matching invoice, not just the current page (which is what
+      // this used to do, silently undercounting past the first page).
+      const ps = res.summary?.paymentStatus;
+      if (ps) {
+        setStats({
+          total: ps.total ?? 0,
+          paid: ps.paid ?? 0,
+          unpaid: ps.unpaid ?? 0,
+          partial: ps.partial ?? 0,
+          totalAmount: ps.totalAmount ?? 0,
+          paidAmount: ps.paidAmount ?? 0,
+        });
+      }
     } catch (e: any) {
       toast.error(e.message || "Failed to load invoices");
     } finally {
@@ -446,17 +450,10 @@ export default function AdminInvoicesPage() {
     }).format(num);
   };
 
-  // Filter invoices
-  const filteredInvoices = invoices.filter(invoice => {
-    const matchesSearch = 
-      invoice.invoiceNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (invoice.customerName?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-      invoice.customerMobile.includes(searchTerm);
-    
-    const matchesStatus = statusFilter === "all" || invoice.paymentStatus === statusFilter;
-    
-    return matchesSearch && matchesStatus;
-  });
+  // search/status are now sent to the backend in fetchInvoices() — this used
+  // to re-filter the already-fetched (single) page client-side, which is
+  // why it looked like it worked with only 50 invoices ever loaded.
+  const filteredInvoices = invoices;
 
   // Calculate create form totals
   const calculateCreateSubtotal = () => {
@@ -474,8 +471,30 @@ export default function AdminInvoicesPage() {
   }, []);
 
   useEffect(() => {
-    fetchInvoices();
+    if (page !== 1) {
+      setPage(1);
+    } else {
+      fetchInvoices();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedBusinessId]);
+
+  useEffect(() => {
+    fetchInvoices();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page]);
+
+  useEffect(() => {
+    const t = setTimeout(() => {
+      if (page !== 1) {
+        setPage(1);
+      } else {
+        fetchInvoices();
+      }
+    }, 400);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchTerm, statusFilter]);
 
   return (
     <ProtectedRoute requiredPermission="invoice.view">
@@ -629,7 +648,7 @@ export default function AdminInvoicesPage() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <p className="text-sm text-slate-400">
-              Showing {filteredInvoices.length} invoices {loading && <span className="ml-2">• Loading...</span>}
+              Showing {filteredInvoices.length} of {totalFiltered} invoices {loading && <span className="ml-2">• Loading...</span>}
             </p>
             {selectedBusinessId && (
               <div className="text-sm text-slate-400">
@@ -790,6 +809,17 @@ export default function AdminInvoicesPage() {
                 </div>
               ))}
             </div>
+          )}
+
+          {totalFiltered > 0 && (
+            <Pagination
+              page={page}
+              totalPages={Math.max(1, Math.ceil(totalFiltered / PAGE_SIZE))}
+              total={totalFiltered}
+              loading={loading}
+              onPageChange={setPage}
+              itemLabel="invoices"
+            />
           )}
         </div>
       </div>

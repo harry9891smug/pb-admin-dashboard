@@ -48,7 +48,17 @@ export default function AdminSubscriptionsPage() {
 const fetchData = async () => {
   setLoading(true);
   try {
-    const res = await getAdminSubscriptions({ page, limit });
+    // status/plan/businessId/userId used to be collected in state but never
+    // actually sent to the backend — the filter UI looked functional but
+    // did nothing. Wiring them through here.
+    const res = await getAdminSubscriptions({
+      page,
+      limit,
+      status: (status || undefined) as any,
+      plan: (plan || undefined) as any,
+      businessId: businessId ? Number(businessId) : undefined,
+      userId: userId ? Number(userId) : undefined,
+    });
 
     console.log("ADMIN SUBS RES =>", res);
     console.log("SUBS =>", res?.data?.subscriptions);

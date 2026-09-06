@@ -9,6 +9,7 @@ export * from "./api/admin/templateImages";
 export * from "./api/admin/sms";
 export * from "./api/admin/subscriptions";
 export * from "./api/admin/testAccounts";
+export * from "./api/admin/dashboard";
 
 const unwrapList = <T = any>(res: any): T[] => {
   // Supports: res.data.items, res.data.data, res.data.data.items
@@ -362,9 +363,18 @@ export interface ApiOffer {
 
 export interface OffersResponse {
   items: ApiOffer[];
-  total: number;
+  summary: {
+    total: number;
+    draft: number;
+    active: number;
+    expired: number;
+    inactive: number;
+    enabled: number;
+    disabled: number;
+  };
   limit: number;
   offset: number;
+  totalFiltered: number;
 }
 
 export const getOffers = async (params?: {
@@ -1432,6 +1442,8 @@ export const getAdminInvoices = async (params: {
   businessId: number;
   limit?: number;
   offset?: number;
+  q?: string;
+  paymentStatus?: string;
 }): Promise<any> => {
   const token = getAuthToken();
   if (!token) throw new Error("Auth required");

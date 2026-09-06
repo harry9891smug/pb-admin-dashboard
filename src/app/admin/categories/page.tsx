@@ -13,6 +13,7 @@ import {
   Tag,
 } from "lucide-react";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import Pagination from "@/components/ui/Pagination";
 import { toast } from "react-hot-toast";
 
 import {
@@ -73,6 +74,16 @@ export default function CategoriesPage() {
       return matchesSearch && matchesStatus;
     });
   }, [items, searchTerm, statusFilter]);
+
+  // Full list is fetched in one shot (small catalog) — pagination is
+  // client-side over the filtered results, no API round trip.
+  const PAGE_SIZE = 20;
+  const [page, setPage] = useState(1);
+  useEffect(() => setPage(1), [searchTerm, statusFilter]);
+  const paginated = useMemo(
+    () => filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
+    [filtered, page]
+  );
 
   const stats = useMemo(() => {
     const total = items.length;
@@ -283,7 +294,7 @@ export default function CategoriesPage() {
               </button>
             </div>
           ) : (
-            filtered.map((cat) => (
+            paginated.map((cat) => (
               <div
                 key={cat.id}
                 className="rounded-xl border border-slate-800 bg-slate-900/60 p-6 flex items-center justify-between"
@@ -316,6 +327,16 @@ export default function CategoriesPage() {
             ))
           )}
         </div>
+
+        {filtered.length > 0 && (
+          <Pagination
+            page={page}
+            totalPages={Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))}
+            total={filtered.length}
+            onPageChange={setPage}
+            itemLabel="categories"
+          />
+        )}
 
         {/* Modal */}
         {(isCreateOpen || isEditOpen) && (

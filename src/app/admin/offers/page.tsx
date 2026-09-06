@@ -22,6 +22,7 @@ import {
 } from "@/lib/api";
 import { toast } from "react-hot-toast";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import Pagination from "@/components/ui/Pagination";
 
 interface Offer {
   id: number;
@@ -58,6 +59,9 @@ export default function OffersPage() {
     expired: 0,
     inactive: 0,
   });
+  const [page, setPage] = useState(1);
+  const [totalFiltered, setTotalFiltered] = useState(0);
+  const PAGE_SIZE = 20;
 
   const [processingOffer, setProcessingOffer] = useState<number | null>(null);
 
@@ -135,7 +139,8 @@ export default function OffersPage() {
         params.status = statusMap[statusFilter] || statusFilter;
       }
 
-      params.limit = 50;
+      params.limit = PAGE_SIZE;
+      params.offset = (page - 1) * PAGE_SIZE;
 
       // Was falling back to 3 hardcoded fake offers on any error via
       // getOffersWithFallback — that masked real failures instead of
@@ -184,13 +189,22 @@ export default function OffersPage() {
       });
 
       setOffers(formattedOffers);
+      setTotalFiltered(data.totalFiltered ?? formattedOffers.length);
 
-      const total = formattedOffers.length;
-      const active = formattedOffers.filter((o) => o.status === "active").length;
-      const awaiting_approval = formattedOffers.filter((o) => o.status === "awaiting_approval").length;
-      const expired = formattedOffers.filter((o) => o.status === "expired").length;
-      const inactive = formattedOffers.filter((o) => o.status === "inactive").length;
-      setStats({ total, active, awaiting_approval, expired, inactive });
+      // Use the backend's summary (counts across ALL matching offers, not
+      // just this page) instead of recomputing from the current page's
+      // items — the old client-side count silently undercounted as soon as
+      // there was more than one page of results.
+      const s = data.summary;
+      if (s) {
+        setStats({
+          total: s.total ?? 0,
+          active: s.active ?? 0,
+          awaiting_approval: s.draft ?? 0,
+          expired: s.expired ?? 0,
+          inactive: s.inactive ?? 0,
+        });
+      }
     } catch (err: any) {
       setError(err.message || "Failed to load offers");
       toast.error(err.message || "Failed to load offers");
@@ -521,10 +535,16 @@ export default function OffersPage() {
   // ✅ UTILITIES
   useEffect(() => {
     fetchOffers();
-  }, []);
+  }, [page]);
 
   useEffect(() => {
-    const t = setTimeout(fetchOffers, 500);
+    const t = setTimeout(() => {
+      if (page !== 1) {
+        setPage(1); // triggers the [page] effect above, which re-fetches
+      } else {
+        fetchOffers();
+      }
+    }, 500);
     return () => clearTimeout(t);
   }, [searchTerm, statusFilter]);
 
@@ -679,7 +699,7 @@ export default function OffersPage() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <p className="text-sm text-slate-400">
-              Showing {offers.length} offers {loading && <span className="ml-2">• Updating...</span>}
+              Showing {offers.length} of {totalFiltered} offers {loading && <span className="ml-2">• Updating...</span>}
             </p>
           </div>
 
@@ -853,6 +873,17 @@ export default function OffersPage() {
                 </div>
               ))}
             </div>
+          )}
+
+          {totalFiltered > 0 && (
+            <Pagination
+              page={page}
+              totalPages={Math.max(1, Math.ceil(totalFiltered / PAGE_SIZE))}
+              total={totalFiltered}
+              loading={loading}
+              onPageChange={setPage}
+              itemLabel="offers"
+            />
           )}
         </div>
       </div>

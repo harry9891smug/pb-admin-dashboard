@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
-  billingGetSubscriptions,
+  billingGetSubscriptionById,
   billingSuspend,
   billingActivate,
   billingCancel,
@@ -56,8 +56,11 @@ export default function BillingDetailPage() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const all = await billingGetSubscriptions();
-      setSub(all.find((s) => s.id === id) ?? null);
+      // Used to fetch the whole (capped-at-100) subscriptions list and find
+      // this id in memory — a subscription outside that window was simply
+      // unreachable by direct link. Now hits a dedicated by-id endpoint.
+      const found = await billingGetSubscriptionById(id);
+      setSub(found);
     } catch {
       toastError("Failed to load subscription");
     } finally {

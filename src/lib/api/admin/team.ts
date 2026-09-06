@@ -1,6 +1,9 @@
 import { apiClient } from "../../axios";
 import { authHeader, ensureToken, extractApiError } from "../utils";
 
+// Alias kept for the team page, which imports this as `AdminTeamMember`.
+export type AdminTeamMember = TeamMember;
+
 export type TeamMember = {
   id: number;
   email: string;

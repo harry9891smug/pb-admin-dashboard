@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Search, Plus, RefreshCw, AlertCircle, Trash2, CheckCircle, KeyRound } from "lucide-react";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import Pagination from "@/components/ui/Pagination";
 import { toast } from "react-hot-toast";
 
 import {
@@ -51,6 +52,15 @@ export default function PermissionsPage() {
       return k.includes(q) || l.includes(q);
     });
   }, [items, searchTerm]);
+
+  // Fetched in one shot — pagination is client-side over the filtered list.
+  const PAGE_SIZE = 20;
+  const [page, setPage] = useState(1);
+  useEffect(() => setPage(1), [searchTerm]);
+  const paginated = useMemo(
+    () => filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
+    [filtered, page]
+  );
 
   const stats = useMemo(() => {
     return { total: items.length };
@@ -180,7 +190,7 @@ export default function PermissionsPage() {
               </button>
             </div>
           ) : (
-            filtered.map((p) => (
+            paginated.map((p) => (
               <div
                 key={p.id}
                 className="rounded-xl border border-slate-800 bg-slate-900/60 p-6 flex items-center justify-between"
@@ -204,6 +214,16 @@ export default function PermissionsPage() {
             ))
           )}
         </div>
+
+        {filtered.length > 0 && (
+          <Pagination
+            page={page}
+            totalPages={Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))}
+            total={filtered.length}
+            onPageChange={setPage}
+            itemLabel="permissions"
+          />
+        )}
 
         {/* Modal */}
         {isCreateOpen && (
