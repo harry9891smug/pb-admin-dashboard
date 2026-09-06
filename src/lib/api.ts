@@ -10,6 +10,7 @@ export * from "./api/admin/sms";
 export * from "./api/admin/subscriptions";
 export * from "./api/admin/testAccounts";
 export * from "./api/admin/dashboard";
+export * from "./api/admin/promoDeskUsers";
 
 const unwrapList = <T = any>(res: any): T[] => {
   // Supports: res.data.items, res.data.data, res.data.data.items

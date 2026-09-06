@@ -16,6 +16,7 @@ import {
   MessageCircle,
   MessageCircleCodeIcon,
   FlaskConical,
+  Smartphone,
 } from "lucide-react";
 
 // Single source of truth for every navigable admin page — Sidebar renders it
@@ -88,7 +89,8 @@ export const navSections: NavSection[] = [
     key: "support-tools",
     title: "Support Tools",
     items: [
-      { href: "/admin/test-accounts", label: "Test Accounts", icon: FlaskConical, permission: "test_account.view", keywords: ["reviewer", "demo", "qa", "trial", "google review"] },
+      { href: "/admin/test-accounts", label: "PromoBandhu Test Accounts", icon: FlaskConical, permission: "test_account.view", keywords: ["reviewer", "demo", "qa", "trial", "google review", "promobandhu"] },
+      { href: "/admin/promodesk-users", label: "PromoDesk Users", icon: Smartphone, permission: "promodesk_user.view", keywords: ["promodesk", "sales executive", "sales manager", "field staff", "support app login"] },
     ],
   },
 ];
