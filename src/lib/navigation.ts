@@ -18,6 +18,7 @@ import {
   FlaskConical,
   Smartphone,
   Gift,
+  Mail,
 } from "lucide-react";
 
 // Single source of truth for every navigable admin page — Sidebar renders it
@@ -60,6 +61,7 @@ export const navSections: NavSection[] = [
       { href: "/admin/advertisements", label: "Advertisements", icon: Megaphone, permission: "offer.view", keywords: ["ads"] },
       { href: "/admin/categories", label: "Categories", icon: Tags, permission: "business.view" },
       { href: "/admin/referrals", label: "Referral Codes", icon: Gift, permission: "business.view", keywords: ["influencer", "associate", "sales", "free sms", "invite"] },
+      { href: "/admin/business-email", label: "Business Email", icon: Mail, permission: "business.view", keywords: ["email", "mailbox", "claim", "early access"] },
     ],
   },
   {
