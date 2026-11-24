@@ -19,6 +19,7 @@ import {
   Smartphone,
   Gift,
   Mail,
+  Clapperboard,
 } from "lucide-react";
 
 // Single source of truth for every navigable admin page — Sidebar renders it
@@ -59,6 +60,7 @@ export const navSections: NavSection[] = [
       { href: "/admin/offers", label: "Offers", icon: BadgePercent, permission: "offer.view", keywords: ["deals", "discounts", "promotions"] },
       { href: "/admin/plans", label: "Plans", icon: Layers3, permission: "subscription.view", keywords: ["pricing", "packages"] },
       { href: "/admin/advertisements", label: "Advertisements", icon: Megaphone, permission: "offer.view", keywords: ["ads"] },
+      { href: "/admin/videos", label: "Welcome Videos", icon: Clapperboard, permission: "offer.view", keywords: ["video", "announcement", "welcome", "onboarding"] },
       { href: "/admin/categories", label: "Categories", icon: Tags, permission: "business.view" },
       { href: "/admin/referrals", label: "Referral Codes", icon: Gift, permission: "business.view", keywords: ["influencer", "associate", "sales", "free sms", "invite"] },
       { href: "/admin/business-email", label: "Business Email", icon: Mail, permission: "business.view", keywords: ["email", "mailbox", "claim", "early access"] },
