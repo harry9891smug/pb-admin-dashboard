@@ -199,6 +199,15 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--pb-violet); }
 table thead tr { letter-spacing: 0.01em; }
 table thead th { font-weight: 600; color: #4b5563; }
 
+/* Long tables scroll inside their own box; header stays pinned */
+div.overflow-x-auto { max-height: 65vh; overflow-y: auto; }
+div.overflow-x-auto table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #f7f6fd;
+}
+
 /* --------- Page entrance --------- */
 /* Fade only, and no lasting transform: a transform left on a parent would trap
    every position:fixed popup (modals) inside the page area. */

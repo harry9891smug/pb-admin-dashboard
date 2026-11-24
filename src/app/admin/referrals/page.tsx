@@ -5,6 +5,7 @@ import { Plus, RefreshCw, AlertCircle, Gift, Copy, Power, Users } from "lucide-r
 import { toast } from "react-hot-toast";
 
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import { useShowMore, ShowMoreButton } from "@/components/ui/ShowMore";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   adminCreateReferral,
@@ -43,6 +44,7 @@ export default function ReferralsPage() {
 
   const [codes, setCodes] = useState<ReferralCode[]>([]);
   const [leaders, setLeaders] = useState<ReferralLeader[]>([]);
+  const codesMore = useShowMore(codes, 8);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [typeFilter, setTypeFilter] = useState<ReferralOwnerType | "all">("all");
@@ -266,7 +268,7 @@ export default function ReferralsPage() {
               <h3 className="text-lg font-medium text-slate-300">No referral codes yet</h3>
             </div>
           ) : (
-            codes.map((c) => (
+            codesMore.visible.map((c) => (
               <div
                 key={c.id}
                 className="rounded-xl border border-slate-800 bg-slate-900/60 p-5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
@@ -337,6 +339,7 @@ export default function ReferralsPage() {
               </div>
             ))
           )}
+          <ShowMoreButton hasMore={codesMore.hasMore} rest={codesMore.rest} onClick={codesMore.more} />
         </div>
 
         {/* Create modal */}
