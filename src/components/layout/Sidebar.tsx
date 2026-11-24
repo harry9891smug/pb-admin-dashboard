@@ -115,9 +115,7 @@ function SidebarBody() {
     <>
       {/* Brand */}
       <div className="flex h-16 shrink-0 items-center gap-3 border-b border-gray-100 px-5">
-        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-emerald-400 text-lg font-extrabold text-white shadow-md shadow-violet-500/25">
-          P
-        </div>
+        <img src="/logo.png" alt="PromoBandhu" className="h-10 w-auto shrink-0 object-contain" />
         <div className="leading-tight">
           <div className="text-[15px] font-bold text-gray-900">
             PromoBandhu <span className="text-violet-600">Admin</span>

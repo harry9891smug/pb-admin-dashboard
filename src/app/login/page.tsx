@@ -80,8 +80,8 @@ function LoginContent() {
         <div className="pointer-events-none absolute right-24 top-1/2 h-24 w-24 rotate-12 rounded-3xl bg-white/10" />
 
         <div className="relative flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/20 text-xl font-extrabold backdrop-blur">
-            P
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white p-1.5 shadow-lg">
+            <img src="/logo.png" alt="PromoBandhu" className="h-full w-full object-contain" />
           </div>
           <span className="text-lg font-bold tracking-tight">PromoBandhu</span>
         </div>
@@ -112,9 +112,7 @@ function LoginContent() {
       <div className="pb-app-bg flex min-h-screen items-center justify-center px-5 py-10">
         <div className="w-full max-w-md">
           <div className="mb-8 text-center lg:text-left">
-            <div className="mb-5 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-emerald-400 text-2xl font-extrabold text-white shadow-lg shadow-violet-500/25 lg:hidden">
-              P
-            </div>
+            <img src="/logo.png" alt="PromoBandhu" className="mx-auto mb-5 h-16 w-auto lg:hidden" />
             <h1 className="text-3xl font-bold tracking-tight text-gray-900">Welcome back</h1>
             <p className="mt-2 text-sm text-gray-500">Sign in to the PromoBandhu admin dashboard</p>
           </div>
