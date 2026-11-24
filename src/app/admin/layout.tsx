@@ -13,6 +13,7 @@ export default function AdminLayout({
 }) {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const [menuOpen, setMenuOpen] = React.useState(false);
 
   React.useEffect(() => {
     if (!loading && !user) {
@@ -22,10 +23,10 @@ export default function AdminLayout({
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+      <div className="min-h-screen pb-app-bg flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-slate-400 text-sm">Loading dashboard...</p>
+          <div className="w-9 h-9 border-[3px] border-violet-500 border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-gray-500 text-sm">Loading dashboard...</p>
         </div>
       </div>
     );
@@ -36,12 +37,12 @@ export default function AdminLayout({
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex">
-      <Sidebar />
-      <div className="flex-1 flex flex-col">
-        <Topbar />
-        <main className="flex-1 overflow-y-auto p-6 bg-gradient-to-b bg-slate-800\/30">
-          {children}
+    <div className="min-h-screen pb-app-bg text-gray-900 flex">
+      <Sidebar mobileOpen={menuOpen} onClose={() => setMenuOpen(false)} />
+      <div className="flex-1 min-w-0 flex flex-col">
+        <Topbar onMenu={() => setMenuOpen(true)} />
+        <main className="flex-1 px-4 py-5 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
+          <div className="pb-fade-up">{children}</div>
         </main>
       </div>
     </div>

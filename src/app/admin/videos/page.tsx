@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { Pencil, Trash2, Eye, Upload } from "lucide-react";
+import { Pencil, Trash2, Play, Upload, Film, Plus, X } from "lucide-react";
 
 import { isAuthenticated } from "@/lib/api";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
@@ -50,7 +50,24 @@ const toLocalInput = (iso: string | null) => {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
 };
 const fromLocalInput = (v: string) => (v ? new Date(v).toISOString() : null);
-const showDate = (iso: string | null) => (iso ? new Date(iso).toLocaleString() : "-");
+const showDate = (iso: string | null) =>
+  iso
+    ? new Date(iso).toLocaleString(undefined, {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    : null;
+
+// The dashboard stylesheet recolours every "slate" class for its light theme,
+// so this page sticks to plain white / gray / violet classes.
+const inputCls =
+  "mt-1.5 w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 outline-none transition focus:border-violet-500 focus:ring-2 focus:ring-violet-200";
+const labelCls = "text-xs font-semibold text-gray-600";
+const btnGhost =
+  "inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:bg-gray-50";
 
 export default function VideosPage() {
   const router = useRouter();
@@ -202,159 +219,195 @@ export default function VideosPage() {
     }
   };
 
-  const input =
-    "mt-1 w-full px-3 py-2 rounded-lg border border-slate-800 bg-slate-900 text-white placeholder:text-slate-500";
-
   return (
     <ProtectedRoute requiredPermission="business.view">
-      <div className="p-6 space-y-5">
+      <div className="mx-auto max-w-6xl space-y-6">
+        {/* Header */}
         <div className="flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-xl font-semibold text-black">Welcome & Announcement Videos</h1>
-            <p className="text-sm text-slate-400 mt-1">
-              Full-screen video shown before the dashboard. The Welcome video plays first until
-              the user views it; then one active announcement at a time. A skipped video comes
-              back at the next login.
-            </p>
+          <div className="flex items-start gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-100 text-violet-600">
+              <Film className="h-5 w-5" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-gray-900">Welcome &amp; Announcement Videos</h1>
+              <p className="mt-1 max-w-2xl text-sm text-gray-500">
+                A full-screen video shown before the dashboard. The Welcome video plays first until
+                the user views it, then one active announcement at a time. A skipped video comes
+                back at the next login.
+              </p>
+            </div>
           </div>
           <button
             onClick={openCreate}
-            className="px-4 py-2 rounded-lg bg-emerald-500/15 border border-emerald-500/40 text-black hover:bg-emerald-500/20 transition whitespace-nowrap"
+            className="inline-flex items-center gap-2 whitespace-nowrap rounded-xl bg-violet-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-violet-700"
           >
-            + Add Video
+            <Plus className="h-4 w-4" /> Add Video
           </button>
         </div>
 
-        <div className="bg-slate-950 border border-slate-800/80 rounded-xl overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-slate-900/60">
-                <tr className="text-left text-slate-300">
-                  <th className="px-4 py-3">Title</th>
-                  <th className="px-4 py-3">Type</th>
-                  <th className="px-4 py-3">Status</th>
-                  <th className="px-4 py-3">Runs</th>
-                  <th className="px-4 py-3">Priority</th>
-                  <th className="px-4 py-3">Viewed</th>
-                  <th className="px-4 py-3">Skipped</th>
-                  <th className="px-4 py-3 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800">
-                {loading ? (
-                  <tr>
-                    <td className="px-4 py-6 text-slate-400" colSpan={8}>
-                      Loading...
-                    </td>
-                  </tr>
-                ) : items.length === 0 ? (
-                  <tr>
-                    <td className="px-4 py-6 text-slate-400" colSpan={8}>
-                      No videos yet. Add the Welcome video to get started.
-                    </td>
-                  </tr>
-                ) : (
-                  items.map((v) => (
-                    <tr key={v.id} className="text-slate-200 hover:bg-slate-900/40 transition">
-                      <td className="px-4 py-4 align-top">
-                        <div className="font-semibold text-black">{v.title}</div>
-                        <div className="text-xs text-slate-500 mt-1">
-                          Skip after {v.skipAfterSec}s · viewed after {v.viewedAfterSec}s
-                        </div>
-                      </td>
-                      <td className="px-4 py-4 align-top">
+        {/* List */}
+        <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+          {loading ? (
+            <div className="px-6 py-12 text-center text-sm text-gray-500">Loading...</div>
+          ) : items.length === 0 ? (
+            <div className="px-6 py-14 text-center">
+              <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-100 text-violet-600">
+                <Film className="h-6 w-6" />
+              </div>
+              <div className="text-sm font-semibold text-gray-900">No videos yet</div>
+              <div className="mt-1 text-sm text-gray-500">
+                Add the Welcome video to get started.
+              </div>
+            </div>
+          ) : (
+            <div className="divide-y divide-gray-100">
+              {items.map((v) => {
+                const from = showDate(v.startDate);
+                const to = showDate(v.endDate);
+                return (
+                  <div key={v.id} className="flex flex-wrap items-center gap-4 px-5 py-4">
+                    {/* Thumbnail */}
+                    <button
+                      onClick={() => setPreviewUrl(v.videoUrl)}
+                      title="Preview"
+                      className="group relative h-24 w-14 flex-none overflow-hidden rounded-xl bg-gray-900"
+                    >
+                      <video
+                        src={`${v.videoUrl}#t=0.5`}
+                        muted
+                        preload="metadata"
+                        className="h-full w-full object-cover opacity-80"
+                      />
+                      <span className="absolute inset-0 flex items-center justify-center">
+                        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-gray-900 transition group-hover:scale-110">
+                          <Play className="h-3.5 w-3.5" />
+                        </span>
+                      </span>
+                    </button>
+
+                    {/* Info */}
+                    <div className="min-w-[220px] flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-sm font-semibold text-gray-900">{v.title}</span>
                         <span
                           className={
                             v.type === "welcome"
-                              ? "inline-flex px-2.5 py-1 rounded-full text-xs border border-purple-500/40 bg-purple-500/10 text-black"
-                              : "inline-flex px-2.5 py-1 rounded-full text-xs border border-slate-700 bg-slate-900 text-white"
+                              ? "rounded-full bg-violet-100 px-2.5 py-0.5 text-[11px] font-semibold text-violet-700"
+                              : "rounded-full bg-sky-100 px-2.5 py-0.5 text-[11px] font-semibold text-sky-700"
                           }
                         >
                           {v.type === "welcome" ? "Welcome" : "Announcement"}
                         </span>
-                      </td>
-                      <td className="px-4 py-4 align-top">
-                        <button
-                          onClick={() => toggleStatus(v)}
-                          title="Click to switch"
-                          className={
-                            v.status === "active"
-                              ? "inline-flex px-2.5 py-1 rounded-full text-xs border border-emerald-500/40 bg-emerald-500/10 text-black"
-                              : "inline-flex px-2.5 py-1 rounded-full text-xs border border-rose-500/30 bg-rose-500/10 text-black"
-                          }
-                        >
-                          {v.status === "active" ? "Active" : "Inactive"}
-                        </button>
-                      </td>
-                      <td className="px-4 py-4 align-top text-xs text-slate-400">
-                        <div>From: {showDate(v.startDate)}</div>
-                        <div>To: {showDate(v.endDate)}</div>
-                      </td>
-                      <td className="px-4 py-4 align-top">{v.priority}</td>
-                      <td className="px-4 py-4 align-top">{v.viewedCount}</td>
-                      <td className="px-4 py-4 align-top">{v.skippedCount}</td>
-                      <td className="px-4 py-4 align-top">
-                        <div className="flex justify-end gap-2">
-                          <button
-                            onClick={() => setPreviewUrl(v.videoUrl)}
-                            className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-800 bg-slate-900 text-white hover:bg-slate-800 transition"
-                          >
-                            <Eye className="h-4 w-4" /> Preview
-                          </button>
-                          <button
-                            onClick={() => openEdit(v)}
-                            className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-800 bg-slate-900 text-white hover:bg-slate-800 transition"
-                          >
-                            <Pencil className="h-4 w-4" /> Edit
-                          </button>
-                          <button
-                            onClick={() => onDelete(v)}
-                            className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-rose-500/40 bg-rose-500/10 text-black hover:bg-rose-500/15 transition"
-                          >
-                            <Trash2 className="h-4 w-4" /> Delete
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+                      </div>
+                      <div className="mt-1.5 text-xs text-gray-500">
+                        {from || to ? (
+                          <>
+                            {from ? `From ${from}` : "From any time"}
+                            {" · "}
+                            {to ? `until ${to}` : "no end date"}
+                          </>
+                        ) : (
+                          "Runs any time while active"
+                        )}
+                      </div>
+                      <div className="mt-1 text-xs text-gray-400">
+                        Priority {v.priority} · Skip after {v.skipAfterSec}s · Viewed after{" "}
+                        {v.viewedAfterSec}s
+                      </div>
+                    </div>
+
+                    {/* Counts */}
+                    <div className="flex gap-3">
+                      <div className="min-w-[72px] rounded-xl bg-emerald-50 px-3 py-2 text-center">
+                        <div className="text-base font-bold text-emerald-700">{v.viewedCount}</div>
+                        <div className="text-[11px] font-medium text-emerald-700/80">Viewed</div>
+                      </div>
+                      <div className="min-w-[72px] rounded-xl bg-amber-50 px-3 py-2 text-center">
+                        <div className="text-base font-bold text-amber-700">{v.skippedCount}</div>
+                        <div className="text-[11px] font-medium text-amber-700/80">Skipped</div>
+                      </div>
+                    </div>
+
+                    {/* Active switch */}
+                    <button
+                      onClick={() => toggleStatus(v)}
+                      title={v.status === "active" ? "Click to deactivate" : "Click to activate"}
+                      className="flex items-center gap-2"
+                    >
+                      <span
+                        className={`relative h-6 w-11 rounded-full transition ${
+                          v.status === "active" ? "bg-emerald-500" : "bg-gray-300"
+                        }`}
+                      >
+                        <span
+                          className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all ${
+                            v.status === "active" ? "left-[22px]" : "left-0.5"
+                          }`}
+                        />
+                      </span>
+                      <span className="w-14 text-left text-xs font-semibold text-gray-600">
+                        {v.status === "active" ? "Active" : "Inactive"}
+                      </span>
+                    </button>
+
+                    {/* Actions */}
+                    <div className="flex gap-2">
+                      <button onClick={() => openEdit(v)} className={btnGhost}>
+                        <Pencil className="h-3.5 w-3.5" /> Edit
+                      </button>
+                      <button
+                        onClick={() => onDelete(v)}
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-600 transition hover:bg-red-100"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" /> Delete
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
+        {/* Add / edit modal */}
         {open ? (
-          <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
-            <div className="w-full max-w-2xl max-h-[92vh] overflow-y-auto bg-slate-950 border border-slate-800 rounded-2xl">
-              <div className="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
-                <div className="text-white font-semibold">
-                  {editingId ? `Edit Video #${editingId}` : "Add Video"}
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <div className="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white shadow-2xl">
+              <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
+                <div>
+                  <div className="text-base font-bold text-gray-900">
+                    {editingId ? "Edit video" : "Add video"}
+                  </div>
+                  <div className="mt-0.5 text-xs text-gray-500">
+                    Short portrait clips (30-40 sec) work best.
+                  </div>
                 </div>
                 <button
                   onClick={() => !saving && closeModal()}
-                  className="px-3 py-1.5 rounded-lg border border-slate-800 bg-slate-900 text-slate-200 hover:bg-slate-800 transition"
+                  className="rounded-lg p-2 text-gray-500 transition hover:bg-gray-100"
+                  aria-label="Close"
                 >
-                  Close
+                  <X className="h-5 w-5" />
                 </button>
               </div>
 
-              <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 px-6 py-5 md:grid-cols-2">
                 <div className="md:col-span-2">
-                  <label className="text-xs text-slate-400">Title *</label>
+                  <label className={labelCls}>Title *</label>
                   <input
                     value={form.title}
                     onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))}
                     placeholder="e.g. Welcome to PromoBandhu"
-                    className={input}
+                    className={inputCls}
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs text-slate-400">Type *</label>
+                  <label className={labelCls}>Type *</label>
                   <select
                     value={form.type}
                     onChange={(e) => setForm((p) => ({ ...p, type: e.target.value as VideoType }))}
-                    className={input}
+                    className={inputCls}
                   >
                     <option value="welcome">Welcome (plays first)</option>
                     <option value="announcement">Announcement</option>
@@ -362,11 +415,13 @@ export default function VideosPage() {
                 </div>
 
                 <div>
-                  <label className="text-xs text-slate-400">Status *</label>
+                  <label className={labelCls}>Status *</label>
                   <select
                     value={form.status}
-                    onChange={(e) => setForm((p) => ({ ...p, status: e.target.value as VideoStatus }))}
-                    className={input}
+                    onChange={(e) =>
+                      setForm((p) => ({ ...p, status: e.target.value as VideoStatus }))
+                    }
+                    className={inputCls}
                   >
                     <option value="active">Active</option>
                     <option value="inactive">Inactive</option>
@@ -374,19 +429,17 @@ export default function VideosPage() {
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="text-xs text-slate-400">
-                    Video * (short portrait MP4, under 50 MB)
-                  </label>
-                  <div className="mt-1 flex gap-2">
+                  <label className={labelCls}>Video * (MP4, MOV or WebM, under 50 MB)</label>
+                  <div className="mt-1.5 flex gap-2">
                     <input
                       value={form.videoUrl}
                       onChange={(e) => setForm((p) => ({ ...p, videoUrl: e.target.value }))}
-                      placeholder="Paste a video URL, or upload a file ->"
-                      className="w-full px-3 py-2 rounded-lg border border-slate-800 bg-slate-900 text-white placeholder:text-slate-500"
+                      placeholder="Paste a video URL, or upload a file"
+                      className="w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 outline-none transition focus:border-violet-500 focus:ring-2 focus:ring-violet-200"
                     />
                     <label
-                      className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-800 bg-slate-900 text-slate-200 hover:bg-slate-800 transition cursor-pointer whitespace-nowrap ${
-                        uploading ? "opacity-50 pointer-events-none" : ""
+                      className={`inline-flex cursor-pointer items-center gap-2 whitespace-nowrap rounded-xl border border-violet-200 bg-violet-50 px-4 py-2.5 text-sm font-semibold text-violet-700 transition hover:bg-violet-100 ${
+                        uploading ? "pointer-events-none opacity-50" : ""
                       }`}
                     >
                       <Upload className="h-4 w-4" />
@@ -405,65 +458,65 @@ export default function VideosPage() {
                 </div>
 
                 <div>
-                  <label className="text-xs text-slate-400">Start date (optional)</label>
+                  <label className={labelCls}>Start date (optional)</label>
                   <input
                     type="datetime-local"
                     value={form.startDate}
                     onChange={(e) => setForm((p) => ({ ...p, startDate: e.target.value }))}
-                    className={input}
+                    className={inputCls}
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs text-slate-400">End date (optional)</label>
+                  <label className={labelCls}>End date (optional)</label>
                   <input
                     type="datetime-local"
                     value={form.endDate}
                     onChange={(e) => setForm((p) => ({ ...p, endDate: e.target.value }))}
-                    className={input}
+                    className={inputCls}
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs text-slate-400">Priority (lower plays first)</label>
+                  <label className={labelCls}>Priority (lower plays first)</label>
                   <input
                     value={form.priority}
                     onChange={(e) => setForm((p) => ({ ...p, priority: e.target.value }))}
-                    className={input}
+                    className={inputCls}
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs text-slate-400">Skip appears after (sec)</label>
+                  <label className={labelCls}>Skip appears after (sec)</label>
                   <input
                     value={form.skipAfterSec}
                     onChange={(e) => setForm((p) => ({ ...p, skipAfterSec: e.target.value }))}
-                    className={input}
+                    className={inputCls}
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs text-slate-400">Counts as viewed after (sec)</label>
+                  <label className={labelCls}>Counts as viewed after (sec)</label>
                   <input
                     value={form.viewedAfterSec}
                     onChange={(e) => setForm((p) => ({ ...p, viewedAfterSec: e.target.value }))}
-                    className={input}
+                    className={inputCls}
                   />
                 </div>
               </div>
 
-              <div className="px-5 py-4 border-t border-slate-800 flex items-center justify-end gap-2">
+              <div className="flex items-center justify-end gap-2 border-t border-gray-100 px-6 py-4">
                 <button
                   disabled={saving}
                   onClick={closeModal}
-                  className="px-4 py-2 rounded-lg border border-slate-800 bg-slate-900 text-slate-200 hover:bg-slate-800 transition disabled:opacity-50"
+                  className="rounded-xl border border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <button
                   disabled={saving || uploading}
                   onClick={onSave}
-                  className="px-4 py-2 rounded-lg bg-emerald-500/15 border border-emerald-500/40 text-emerald-200 hover:bg-emerald-500/20 transition disabled:opacity-50"
+                  className="rounded-xl bg-violet-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-violet-700 disabled:opacity-50"
                 >
                   {saving ? "Saving..." : "Save"}
                 </button>
@@ -472,19 +525,23 @@ export default function VideosPage() {
           </div>
         ) : null}
 
+        {/* Preview */}
         {previewUrl ? (
-          <div className="fixed inset-0 z-[60] bg-black/70 flex items-center justify-center p-4">
-            <div className="w-full max-w-sm rounded-2xl border border-slate-800 bg-slate-950 overflow-hidden">
-              <div className="px-5 py-3 border-b border-slate-800 flex items-center justify-between">
-                <div className="text-white font-semibold">Preview</div>
-                <button
-                  onClick={() => setPreviewUrl(null)}
-                  className="px-3 py-1.5 rounded-lg border border-slate-800 bg-slate-900 text-slate-200 hover:bg-slate-800"
-                >
-                  Close
-                </button>
-              </div>
-              <video src={previewUrl} controls autoPlay className="w-full max-h-[75vh] bg-black" />
+          <div
+            className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 p-4"
+            onClick={() => setPreviewUrl(null)}
+          >
+            <div
+              className="w-full max-w-xs overflow-hidden rounded-2xl bg-black shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <video src={previewUrl} controls autoPlay className="max-h-[80vh] w-full bg-black" />
+              <button
+                onClick={() => setPreviewUrl(null)}
+                className="w-full bg-white py-3 text-sm font-semibold text-gray-800 hover:bg-gray-50"
+              >
+                Close
+              </button>
             </div>
           </div>
         ) : null}

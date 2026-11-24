@@ -5,10 +5,71 @@ import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
-import { ChevronDown, LayoutDashboard } from "lucide-react";
+import { ChevronDown, LayoutDashboard, X } from "lucide-react";
 import { navSections as sections, type NavItem as LinkItem } from "@/lib/navigation";
 
-export default function Sidebar() {
+type SidebarProps = {
+  /** Phone / tablet: the menu slides in over the page. */
+  mobileOpen?: boolean;
+  onClose?: () => void;
+};
+
+export default function Sidebar({ mobileOpen = false, onClose }: SidebarProps) {
+  const pathname = usePathname();
+
+  // Close the drawer whenever the person picks a page.
+  useEffect(() => {
+    onClose?.();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
+
+  // Lock page scroll behind the open drawer.
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [mobileOpen]);
+
+  return (
+    <>
+      {/* Desktop: fixed beside the page */}
+      <aside className="hidden lg:flex lg:flex-col sticky top-0 h-screen w-72 shrink-0 border-r border-gray-200/80 bg-white">
+        <SidebarBody />
+      </aside>
+
+      {/* Mobile / tablet: drawer */}
+      <div
+        className={cn(
+          "fixed inset-0 z-50 lg:hidden transition-opacity duration-200",
+          mobileOpen ? "opacity-100" : "pointer-events-none opacity-0"
+        )}
+        aria-hidden={!mobileOpen}
+      >
+        <div className="absolute inset-0 bg-gray-900/40 backdrop-blur-[2px]" onClick={onClose} />
+        <aside
+          className={cn(
+            "absolute left-0 top-0 flex h-full w-[84%] max-w-xs flex-col bg-white shadow-2xl transition-transform duration-200",
+            mobileOpen ? "translate-x-0" : "-translate-x-full"
+          )}
+        >
+          <button
+            onClick={onClose}
+            aria-label="Close menu"
+            className="absolute right-3 top-4 z-10 rounded-lg p-2 text-gray-500 hover:bg-gray-100"
+          >
+            <X className="h-5 w-5" />
+          </button>
+          <SidebarBody />
+        </aside>
+      </div>
+    </>
+  );
+}
+
+function SidebarBody() {
   const pathname = usePathname();
   const { user } = useAuth();
   const permissions = useMemo(() => user?.permissions ?? [], [user]);
@@ -26,10 +87,9 @@ export default function Sidebar() {
     [permissions]
   );
 
-  const isActive = (href: string) =>
-    pathname === href || pathname.startsWith(href + "/") || pathname.startsWith(href);
+  const isActive = (href: string) => pathname === href || pathname.startsWith(href + "/");
 
-  // ✅ auto-open section containing current route
+  // auto-open the section that holds the current page
   const defaultOpen = useMemo(() => {
     const open: Record<string, boolean> = {};
     for (const s of visibleSections) {
@@ -49,26 +109,25 @@ export default function Sidebar() {
     setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
+  const name = user?.email?.split("@")[0] || "Admin";
+
   return (
-    <aside className="hidden md:flex md:flex-col w-72 bg-slate-950 border-r border-slate-800/80">
+    <>
       {/* Brand */}
-      <div className="h-16 flex items-center px-6 border-b border-slate-800/80">
-        <div className="flex items-center gap-3">
-          <div className="h-9 w-9 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center">
-            <span className="text-emerald-200 font-bold">P</span>
+      <div className="flex h-16 shrink-0 items-center gap-3 border-b border-gray-100 px-5">
+        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-emerald-400 text-lg font-extrabold text-white shadow-md shadow-violet-500/25">
+          P
+        </div>
+        <div className="leading-tight">
+          <div className="text-[15px] font-bold text-gray-900">
+            PromoBandhu <span className="text-violet-600">Admin</span>
           </div>
-          <div className="leading-tight">
-            <div className="text-[15px] font-semibold text-slate-100">
-              PromoBandhu <span className="text-emerald-400">Admin</span>
-            </div>
-            <div className="text-xs text-slate-500">Internal Dashboard</div>
-          </div>
+          <div className="text-[11px] text-gray-400">Internal dashboard</div>
         </div>
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-3 py-4 overflow-y-auto">
-        {/* Dashboard (single) */}
+      <nav className="flex-1 overflow-y-auto px-3 py-4">
         <SidebarLink
           href="/admin/dashboard"
           label="Dashboard"
@@ -76,37 +135,36 @@ export default function Sidebar() {
           active={isActive("/admin/dashboard")}
         />
 
-        {/* Sections (collapsible) */}
-        <div className="mt-4 space-y-3">
+        <div className="mt-5 space-y-1">
           {visibleSections.map((section) => {
             const open = !!openSections[section.key];
+            const hasActive = section.items.some((it) => isActive(it.href));
 
             return (
-              <div key={section.key} className="rounded-xl border border-slate-800/60 bg-slate-950">
-                {/* Section header */}
+              <div key={section.key}>
                 <button
                   type="button"
                   onClick={() => toggle(section.key)}
-                  className={cn(
-                    "w-full flex items-center justify-between px-3 py-2.5 rounded-xl",
-                    "text-left transition-colors",
-                    "hover:bg-slate-900/60"
-                  )}
+                  className="group flex w-full items-center justify-between rounded-lg px-3 py-2 text-left transition-colors hover:bg-gray-50"
                 >
-                  <span className="text-[11px] font-semibold tracking-wider text-slate-400 uppercase">
+                  <span
+                    className={cn(
+                      "text-[11px] font-bold uppercase tracking-wider",
+                      hasActive ? "text-violet-600" : "text-gray-400 group-hover:text-gray-500"
+                    )}
+                  >
                     {section.title}
                   </span>
                   <ChevronDown
                     className={cn(
-                      "w-4 h-4 text-slate-500 transition-transform",
+                      "h-4 w-4 text-gray-400 transition-transform duration-200",
                       open ? "rotate-180" : "rotate-0"
                     )}
                   />
                 </button>
 
-                {/* Section body */}
                 {open && (
-                  <div className="px-2 pb-2 space-y-1">
+                  <div className="mt-1 space-y-0.5 pb-2">
                     {section.items.map((it) => (
                       <SidebarLink
                         key={it.href}
@@ -124,15 +182,19 @@ export default function Sidebar() {
         </div>
       </nav>
 
-      {/* Footer */}
-      <div className="px-5 py-4 border-t border-slate-800/80">
-        <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-3">
-          <p className="text-xs text-slate-300">
-            v0.1 • <span className="text-slate-500">Internal use only</span>
-          </p>
+      {/* Signed-in user */}
+      <div className="shrink-0 border-t border-gray-100 p-3">
+        <div className="flex items-center gap-3 rounded-2xl bg-gray-50 p-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-violet-100 text-sm font-bold uppercase text-violet-700">
+            {name.charAt(0)}
+          </div>
+          <div className="min-w-0 leading-tight">
+            <div className="truncate text-sm font-semibold capitalize text-gray-900">{name}</div>
+            <div className="truncate text-[11px] text-gray-400">{user?.email ?? "Administrator"}</div>
+          </div>
         </div>
       </div>
-    </aside>
+    </>
   );
 }
 
@@ -151,33 +213,26 @@ function SidebarLink({
     <Link
       href={href}
       className={cn(
-        "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all",
-        "border border-transparent",
+        "group relative flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-all",
         active
-          // ✅ HIGH CONTRAST ACTIVE (readable)
-          ? "bg-slate-900 text-white border-emerald-500/50 shadow-[0_0_0_1px_rgba(16,185,129,0.15)]"
-          : "text-slate-300 hover:bg-slate-900/60 hover:text-white hover:border-slate-700/60"
+          ? "bg-violet-50 text-violet-700"
+          : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
       )}
     >
-      {/* left active bar */}
       {active && (
-        <span className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-1 rounded-r bg-emerald-400" />
+        <span className="absolute left-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-r bg-violet-500" />
       )}
-
-      <div
+      <span
         className={cn(
-          "h-9 w-9 rounded-xl flex items-center justify-center transition-colors border",
+          "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors",
           active
-            ? "bg-emerald-500/20 border-emerald-500/40"
-            : "bg-slate-900/60 border-slate-800 group-hover:border-slate-700"
+            ? "bg-violet-500 text-white shadow-sm shadow-violet-500/30"
+            : "bg-gray-100 text-gray-500 group-hover:bg-white group-hover:text-violet-600"
         )}
       >
-        <Icon className={cn("w-4 h-4", active ? "text-white" : "text-slate-400")} />
-      </div>
-
-      <span className="flex-1">{label}</span>
-
-      {active && <span className="h-2 w-2 rounded-full bg-emerald-400" />}
+        <Icon className="h-4 w-4" />
+      </span>
+      <span className="flex-1 truncate">{label}</span>
     </Link>
   );
 }

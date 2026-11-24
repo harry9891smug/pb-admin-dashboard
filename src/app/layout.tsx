@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import React from "react";
-import { AuthProvider } from '@/contexts/AuthContext'; 
+import { AuthProvider } from '@/contexts/AuthContext';
 import "./globals.css";
-import CustomToaster from "@/components/ui/toaster"; 
+import CustomToaster from "@/components/ui/toaster";
 import AuthLoader from "@/components/auth/AuthLoader";
 export const metadata: Metadata = {
   title: "Promo Bandhu Admin",
@@ -19,7 +19,7 @@ export default function RootLayout({
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </head>
-      <body className="min-h-screen bg-purple-500  antialiased" suppressHydrationWarning>
+      <body className="min-h-screen antialiased" suppressHydrationWarning>
         <AuthProvider>
            <AuthLoader />
           {children}

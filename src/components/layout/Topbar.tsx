@@ -1,19 +1,27 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { LogOut, Menu } from "lucide-react";
 import { useAuth } from '@/contexts/AuthContext';
+import { allNavItems } from "@/lib/navigation";
 import GlobalSearch from "./GlobalSearch";
 
-export default function Topbar() {
+export default function Topbar({ onMenu }: { onMenu?: () => void }) {
   const pathname = usePathname();
   const { user, logout } = useAuth();
 
+  // Title = the label of the nav page this URL belongs to (longest match wins).
   function getTitle() {
-    if (pathname.startsWith("/admin/businesses")) return "Businesses";
-    if (pathname.startsWith("/admin/offers")) return "Offers";
-    if (pathname.startsWith("/admin/subscriptions")) return "Subscriptions";
-    if (pathname.startsWith("/admin/payments")) return "Payments";
-    return "Dashboard";
+    let best = "";
+    let title = "Dashboard";
+    for (const item of allNavItems) {
+      const hit = pathname === item.href || pathname.startsWith(item.href + "/");
+      if (hit && item.href.length > best.length) {
+        best = item.href;
+        title = item.label;
+      }
+    }
+    return title;
   }
 
   function handleLogout() {
@@ -22,32 +30,44 @@ export default function Topbar() {
     }
   }
 
-  return (
-    <header className="sticky top-0 z-40 h-16 flex items-center justify-between border-b border-slate-800 bg-slate-750/80 backdrop-blur-lg px-6">
-      <div className="flex items-center gap-3">
-        <h1 className="text-lg font-semibold tracking-tight text-slate-100 hidden lg:block">
-          {getTitle()}
-        </h1>
-      </div>
+  const name = user ? user.email?.split("@")[0] || "Admin" : "";
 
-      <div className="flex-1 flex justify-center px-4">
+  return (
+    <header className="sticky top-0 z-40 flex h-16 items-center gap-3 border-b border-gray-200/80 bg-white/80 px-4 backdrop-blur-xl sm:px-6 lg:px-8">
+      <button
+        onClick={onMenu}
+        aria-label="Open menu"
+        className="rounded-xl border border-gray-200 bg-white p-2 text-gray-600 shadow-sm transition hover:bg-gray-50 lg:hidden"
+      >
+        <Menu className="h-5 w-5" />
+      </button>
+
+      <h1 className="hidden text-lg font-bold tracking-tight text-gray-900 md:block">
+        {getTitle()}
+      </h1>
+
+      <div className="flex flex-1 justify-center px-1 sm:px-4">
         <GlobalSearch />
       </div>
 
-      <div className="flex items-center gap-4">
-        <div className="hidden sm:flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-          <span className="text-sm text-slate-400">
-            Welcome, <span className="text-slate-200">
-              {user ? (user.email?.split('@')[0] || 'Admin') : 'Loading...'}
-            </span>
-          </span>
-        </div>
+      <div className="flex items-center gap-3">
+        {user && (
+          <div className="hidden items-center gap-2.5 sm:flex">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-violet-600 text-sm font-bold uppercase text-white shadow-sm">
+              {name.charAt(0)}
+            </div>
+            <div className="hidden leading-tight xl:block">
+              <div className="text-sm font-semibold capitalize text-gray-900">{name}</div>
+              <div className="text-[11px] text-gray-400">Administrator</div>
+            </div>
+          </div>
+        )}
         <button
           onClick={handleLogout}
-          className="rounded-lg border border-slate-700 bg-slate-800/50 px-3 py-1.5 text-xs font-medium text-slate-300 hover:bg-slate-700 hover:border-slate-600 transition-colors"
+          className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700 shadow-sm transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
         >
-          Logout
+          <LogOut className="h-4 w-4" />
+          <span className="hidden sm:inline">Logout</span>
         </button>
       </div>
     </header>

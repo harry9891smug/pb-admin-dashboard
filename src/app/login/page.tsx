@@ -3,8 +3,14 @@
 import React, { useState, useEffect, Suspense } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from '@/contexts/AuthContext';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, BadgePercent, ReceiptText, Users, ShieldCheck } from 'lucide-react';
 import { toast } from "react-hot-toast";
+
+const features = [
+  { icon: BadgePercent, text: "Offers, ads and template images" },
+  { icon: ReceiptText, text: "Subscriptions, billing and invoices" },
+  { icon: Users, text: "Businesses, teams and support tools" },
+];
 
 // Inner component that uses useSearchParams
 function LoginContent() {
@@ -14,7 +20,7 @@ function LoginContent() {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
-  
+
   // REMOVED: useSearchParams() - temporary fix
   // const searchParams = useSearchParams();
 
@@ -27,12 +33,12 @@ function LoginContent() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    
+
     if (!email || !password) {
       toast.error("Please enter both email and password.");
       return;
     }
-    
+
     setIsSubmitting(true);
 
     try {
@@ -52,10 +58,10 @@ function LoginContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+      <div className="min-h-screen pb-app-bg flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-500 mx-auto mb-4"></div>
-          <p className="text-slate-400">Checking authentication...</p>
+          <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-[3px] border-violet-500 border-t-transparent"></div>
+          <p className="text-sm text-gray-500">Checking authentication...</p>
         </div>
       </div>
     );
@@ -66,104 +72,123 @@ function LoginContent() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 px-4">
-      <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900/50 backdrop-blur-xl p-8 shadow-2xl">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center mb-4">
-            <img
-              src="/logo.png"
-              alt="PromoBandhu Admin"
-              className="h-16 w-auto"
-            />
-          </div>
+    <div className="min-h-screen lg:grid lg:grid-cols-2">
+      {/* Brand panel (large screens) */}
+      <div className="relative hidden overflow-hidden bg-gradient-to-br from-violet-700 via-violet-600 to-indigo-700 p-12 text-white lg:flex lg:flex-col lg:justify-between">
+        <div className="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full bg-white/10" />
+        <div className="pointer-events-none absolute -bottom-32 -left-16 h-96 w-96 rounded-full bg-emerald-400/20" />
+        <div className="pointer-events-none absolute right-24 top-1/2 h-24 w-24 rotate-12 rounded-3xl bg-white/10" />
 
-          <h1 className="text-2xl font-bold text-slate-100 mb-2">
-            PromoBandhu Admin
-          </h1>
-          <p className="text-sm text-slate-400">
-            Sign in to access the admin dashboard
-          </p>
+        <div className="relative flex items-center gap-3">
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/20 text-xl font-extrabold backdrop-blur">
+            P
+          </div>
+          <span className="text-lg font-bold tracking-tight">PromoBandhu</span>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-slate-300">
-              Email Address
-            </label>
-            <input
-              type="email"
-              className="w-full rounded-lg border border-slate-700 bg-slate-800/50 px-4 py-3 text-sm text-slate-100 outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
-              placeholder="admin@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              autoComplete="email"
-              required
-              disabled={isSubmitting}
-            />
+        <div className="relative">
+          <h2 className="max-w-md text-4xl font-bold leading-tight tracking-tight">
+            Run every business on PromoBandhu from one place.
+          </h2>
+          <ul className="mt-8 space-y-4">
+            {features.map(({ icon: Icon, text }) => (
+              <li key={text} className="flex items-center gap-3 text-violet-50">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/15 backdrop-blur">
+                  <Icon className="h-5 w-5" />
+                </span>
+                <span className="text-sm font-medium">{text}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="relative flex items-center gap-2 text-xs text-violet-200">
+          <ShieldCheck className="h-4 w-4" />
+          Access is restricted to authorized personnel only
+        </div>
+      </div>
+
+      {/* Form */}
+      <div className="pb-app-bg flex min-h-screen items-center justify-center px-5 py-10">
+        <div className="w-full max-w-md">
+          <div className="mb-8 text-center lg:text-left">
+            <div className="mb-5 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-emerald-400 text-2xl font-extrabold text-white shadow-lg shadow-violet-500/25 lg:hidden">
+              P
+            </div>
+            <h1 className="text-3xl font-bold tracking-tight text-gray-900">Welcome back</h1>
+            <p className="mt-2 text-sm text-gray-500">Sign in to the PromoBandhu admin dashboard</p>
           </div>
 
-          <div className="space-y-2">
-            <div className="flex justify-between items-center">
-              <label className="block text-sm font-medium text-slate-300">
-                Password
-              </label>
-            </div>
-            <div className="relative">
+          <form
+            onSubmit={handleSubmit}
+            className="space-y-5 rounded-3xl border border-gray-200 bg-white p-6 shadow-xl shadow-gray-900/5 sm:p-8"
+          >
+            <div>
+              <label className="mb-1.5 block text-sm font-semibold text-gray-700">Email address</label>
               <input
-                type={showPassword ? "text" : "password"}
-                className="w-full rounded-lg border border-slate-700 bg-slate-800/50 px-4 py-3 pr-10 text-sm text-slate-100 outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete="current-password"
+                type="email"
+                className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition disabled:cursor-not-allowed disabled:opacity-50"
+                placeholder="admin@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                autoComplete="email"
                 required
                 disabled={isSubmitting}
               />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={isSubmitting}
-              >
-                {showPassword ? (
-                  <EyeOff className="w-4 h-4" />
-                ) : (
-                  <Eye className="w-4 h-4" />
-                )}
-              </button>
             </div>
-          </div>
 
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full rounded-lg bg-gradient-to-r from-emerald-500 to-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-lg hover:from-emerald-600 hover:to-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
-          >
-            {isSubmitting ? (
-              <span className="flex items-center justify-center gap-2">
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                Signing in...
-              </span>
-            ) : (
-              "Sign In"
-            )}
-          </button>
-        </form>
+            <div>
+              <label className="mb-1.5 block text-sm font-semibold text-gray-700">Password</label>
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 pr-11 text-sm text-gray-900 outline-none transition disabled:cursor-not-allowed disabled:opacity-50"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="current-password"
+                  required
+                  disabled={isSubmitting}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 transition hover:text-gray-600 disabled:cursor-not-allowed disabled:opacity-50"
+                  disabled={isSubmitting}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
 
-        <div className="mt-6 pt-6 border-t border-slate-800">
-          <button
-            type="button"
-            onClick={demoLogin}
-            disabled={isSubmitting}
-            className="w-full text-center text-sm text-slate-400 hover:text-slate-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Use demo credentials
-          </button>
-        </div>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full rounded-xl bg-violet-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-violet-600/25 transition hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isSubmitting ? (
+                <span className="flex items-center justify-center gap-2">
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+                  Signing in...
+                </span>
+              ) : (
+                "Sign in"
+              )}
+            </button>
 
-        <div className="mt-6 text-center">
-          <p className="text-xs text-slate-500">
-            For security reasons, access is restricted to authorized personnel only
+            <button
+              type="button"
+              onClick={demoLogin}
+              disabled={isSubmitting}
+              className="w-full text-center text-sm font-medium text-gray-500 transition hover:text-violet-600 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Use demo credentials
+            </button>
+          </form>
+
+          <p className="mt-6 text-center text-xs text-gray-400 lg:hidden">
+            Access is restricted to authorized personnel only
           </p>
         </div>
       </div>
@@ -175,10 +200,10 @@ function LoginContent() {
 export default function AdminLoginPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen pb-app-bg flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-500 mx-auto mb-4"></div>
-          <p className="text-slate-400">Loading login page...</p>
+          <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-[3px] border-violet-500 border-t-transparent"></div>
+          <p className="text-sm text-gray-500">Loading login page...</p>
         </div>
       </div>
     }>
