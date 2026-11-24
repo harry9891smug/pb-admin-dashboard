@@ -206,7 +206,7 @@ export default function VideosPage() {
     "mt-1 w-full px-3 py-2 rounded-lg border border-slate-800 bg-slate-900 text-white placeholder:text-slate-500";
 
   return (
-    <ProtectedRoute requiredPermission="offer.view">
+    <ProtectedRoute requiredPermission="business.view">
       <div className="p-6 space-y-5">
         <div className="flex items-start justify-between gap-4">
           <div>
