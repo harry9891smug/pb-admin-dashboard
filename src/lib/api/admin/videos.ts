@@ -53,6 +53,12 @@ export const adminDeleteVideo = async (id: number): Promise<void> => {
   await apiClient.delete(`/admin/videos/${id}`);
 };
 
+/** Forget who viewed or skipped this video, so everyone sees it again. */
+export const adminResetVideoViews = async (id: number): Promise<number> => {
+  const res = await apiClient.post(`/admin/videos/${id}/reset-views`);
+  return res.data?.data?.cleared ?? 0;
+};
+
 /** Uploads an MP4/MOV/WebM (up to 50 MB) and returns its public URL. */
 export const adminUploadVideo = async (file: File): Promise<string> => {
   const fd = new FormData();

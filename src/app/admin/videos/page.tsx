@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { Pencil, Trash2, Play, Upload, Film, Plus, X } from "lucide-react";
+import { Pencil, Trash2, Play, Upload, Film, Plus, X, RotateCcw } from "lucide-react";
 
 import { isAuthenticated } from "@/lib/api";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
@@ -13,6 +13,7 @@ import {
   adminUpdateVideo,
   adminDeleteVideo,
   adminUploadVideo,
+  adminResetVideoViews,
   type AdminVideo,
   type VideoType,
   type VideoStatus,
@@ -208,6 +209,22 @@ export default function VideosPage() {
     }
   };
 
+  const onShowAgain = async (v: AdminVideo) => {
+    if (
+      !confirm(
+        `Show "${v.title}" again?\n\nEveryone who already watched or skipped it will see it again at their next login. Users who have not seen it are not affected.`
+      )
+    )
+      return;
+    try {
+      const n = await adminResetVideoViews(v.id);
+      toast.success(`Reset for ${n} user${n === 1 ? "" : "s"}. They will see it again.`);
+      await fetchList();
+    } catch (e: any) {
+      toast.error(e?.response?.data?.error?.message || e?.message || "Reset failed");
+    }
+  };
+
   const onDelete = async (v: AdminVideo) => {
     if (!confirm(`Delete "${v.title}"? Its view history is deleted too.`)) return;
     try {
@@ -352,6 +369,13 @@ export default function VideosPage() {
 
                     {/* Actions */}
                     <div className="flex gap-2">
+                      <button
+                        onClick={() => onShowAgain(v)}
+                        title="Everyone who has watched or skipped it will see it again"
+                        className={btnGhost}
+                      >
+                        <RotateCcw className="h-3.5 w-3.5" /> Show again
+                      </button>
                       <button onClick={() => openEdit(v)} className={btnGhost}>
                         <Pencil className="h-3.5 w-3.5" /> Edit
                       </button>
