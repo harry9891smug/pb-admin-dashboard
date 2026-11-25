@@ -5,10 +5,13 @@ import { useParams } from "next/navigation";
 import { adminSmsUsageBusinessMonthly } from "@/lib/api/admin/sms";
 import { RefreshCw } from "lucide-react";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import PageShell from "@/components/ui/PageShell";
 
 export default function SmsUsageBusinessMonthlyPage() {
-  const params = useParams<{ businessId: string }>();
-  const businessId = Number(params.businessId);
+  // The route folder is [id], so the param is "id" (it used to read
+  // "businessId", which is undefined → NaN → the page never loaded anything).
+  const params = useParams<{ id: string }>();
+  const businessId = Number(params.id);
 
   const [rows, setRows] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -48,7 +51,8 @@ export default function SmsUsageBusinessMonthlyPage() {
 
   return (
     <ProtectedRoute requiredPermission="business.view">
-    <div className="p-6 space-y-6">
+    <PageShell
+      top={<>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-black">
@@ -86,7 +90,9 @@ export default function SmsUsageBusinessMonthlyPage() {
         <StatCard title="Failed" value={totals.failed} accent="text-red-400" />
       </div>
 
-      <div className="rounded-xl border border-slate-800 overflow-hidden bg-slate-950">
+      </>}
+    >
+      <div className="rounded-xl border border-slate-800 overflow-hidden bg-white">
         <table className="w-full text-sm">
           <thead className="bg-slate-900 text-slate-300">
             <tr>
@@ -126,7 +132,7 @@ export default function SmsUsageBusinessMonthlyPage() {
           </tbody>
         </table>
       </div>
-    </div>
+    </PageShell>
     </ProtectedRoute>
   );
 }

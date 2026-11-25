@@ -5,6 +5,7 @@ import { RefreshCw, AlertCircle, Mail, Copy, Search } from "lucide-react";
 import { toast } from "react-hot-toast";
 
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import PageShell from "@/components/ui/PageShell";
 import {
   adminListBusinessEmailClaims,
   BusinessEmailClaim,
@@ -75,7 +76,8 @@ export default function BusinessEmailPage() {
 
   return (
     <ProtectedRoute requiredPermission="business.view">
-      <div className="space-y-6">
+      <PageShell
+        top={<>
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">Business Email</h1>
@@ -145,7 +147,33 @@ export default function BusinessEmailPage() {
             Sensitive names only
           </label>
         </form>
-
+        </>}
+        footer={
+          total > PAGE_SIZE ? (
+            <div className="flex items-center justify-between text-sm text-slate-400">
+              <span>
+                Page {page + 1} of {lastPage + 1} · {total} claims
+              </span>
+              <div className="flex gap-2">
+                <button
+                  disabled={page === 0 || loading}
+                  onClick={() => setPage((p) => Math.max(0, p - 1))}
+                  className="rounded-lg border border-slate-700 bg-slate-800 px-3 py-1.5 text-slate-200 disabled:opacity-40"
+                >
+                  Previous
+                </button>
+                <button
+                  disabled={page >= lastPage || loading}
+                  onClick={() => setPage((p) => Math.min(lastPage, p + 1))}
+                  className="rounded-lg border border-slate-700 bg-slate-800 px-3 py-1.5 text-slate-200 disabled:opacity-40"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          ) : null
+        }
+      >
         <div className="grid gap-3">
           {loading && items.length === 0 ? (
             <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-6 text-slate-300">Loading...</div>
@@ -195,31 +223,7 @@ export default function BusinessEmailPage() {
             ))
           )}
         </div>
-
-        {total > PAGE_SIZE && (
-          <div className="flex items-center justify-between text-sm text-slate-400">
-            <span>
-              Page {page + 1} of {lastPage + 1} · {total} claims
-            </span>
-            <div className="flex gap-2">
-              <button
-                disabled={page === 0 || loading}
-                onClick={() => setPage((p) => Math.max(0, p - 1))}
-                className="rounded-lg border border-slate-700 bg-slate-800 px-3 py-1.5 text-slate-200 disabled:opacity-40"
-              >
-                Previous
-              </button>
-              <button
-                disabled={page >= lastPage || loading}
-                onClick={() => setPage((p) => Math.min(lastPage, p + 1))}
-                className="rounded-lg border border-slate-700 bg-slate-800 px-3 py-1.5 text-slate-200 disabled:opacity-40"
-              >
-                Next
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
+      </PageShell>
     </ProtectedRoute>
   );
 }

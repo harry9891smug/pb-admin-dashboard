@@ -15,6 +15,7 @@ import {
 import { cn } from "@/lib/utils";
 import { toastSuccess, toastError } from "@/lib/toast";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import PageShell from "@/components/ui/PageShell";
 
 const PAGE_SIZE = 15;
 
@@ -90,7 +91,8 @@ export default function BillingSubscriptionsPage() {
 
   return (
     <ProtectedRoute requiredPermission="subscription.view">
-    <div className="p-6 space-y-5">
+    <PageShell
+      top={<>
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -131,8 +133,34 @@ export default function BillingSubscriptionsPage() {
         </span>
       </div>
 
+      </>}
+      footer={
+        totalPages > 1 ? (
+          <div className="flex items-center justify-between">
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page <= 1}
+              className="px-4 py-2 rounded-lg text-sm border border-slate-600 text-slate-300 hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              ← Prev
+            </button>
+            <span className="text-sm text-slate-400">
+              Page <span className="text-slate-200 font-medium">{page}</span> of{" "}
+              <span className="text-slate-200 font-medium">{totalPages}</span>
+            </span>
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page >= totalPages}
+              className="px-4 py-2 rounded-lg text-sm border border-slate-600 text-slate-300 hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              Next →
+            </button>
+          </div>
+        ) : null
+      }
+    >
       {/* Table */}
-      <div className="border border-slate-700 rounded-xl overflow-x-auto bg-slate-900">
+      <div className="border border-slate-700 rounded-xl overflow-x-auto bg-white">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-slate-700 bg-slate-800">
@@ -202,31 +230,7 @@ export default function BillingSubscriptionsPage() {
           </tbody>
         </table>
       </div>
-
-      {/* ✅ Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <button
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-            disabled={page <= 1}
-            className="px-4 py-2 rounded-lg text-sm border border-slate-600 text-slate-300 hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            ← Prev
-          </button>
-          <span className="text-sm text-slate-400">
-            Page <span className="text-slate-200 font-medium">{page}</span> of{" "}
-            <span className="text-slate-200 font-medium">{totalPages}</span>
-          </span>
-          <button
-            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-            disabled={page >= totalPages}
-            className="px-4 py-2 rounded-lg text-sm border border-slate-600 text-slate-300 hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            Next →
-          </button>
-        </div>
-      )}
-    </div>
+    </PageShell>
     </ProtectedRoute>
   );
 }
@@ -234,20 +238,21 @@ export default function BillingSubscriptionsPage() {
 // ─── Status Badge ──────────────────────────────────────────────────────────
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, { label: string; cls: string; dot: string }> = {
-    active:          { label: "Active",          cls: "bg-emerald-500/20 text-white border-emerald-400/50 shadow-[0_0_8px_rgba(52,211,153,0.2)]", dot: "bg-emerald-400" },
-    trial:           { label: "Trial",           cls: "bg-blue-500/20 text-white border-blue-400/50 shadow-[0_0_8px_rgba(96,165,250,0.2)]",          dot: "bg-blue-400" },
-    grace:           { label: "Grace Period",    cls: "bg-yellow-500/20 text-white border-yellow-400/50 shadow-[0_0_8px_rgba(250,204,21,0.2)]",    dot: "bg-yellow-400" },
-    retrying:        { label: "Retrying",        cls: "bg-orange-500/20 text-white border-orange-400/50 shadow-[0_0_8px_rgba(251,146,60,0.2)]",    dot: "bg-orange-400" },
-    payment_failed:  { label: "Payment Failed",  cls: "bg-red-500/20 text-white border-red-400/50 shadow-[0_0_8px_rgba(248,113,113,0.2)]",            dot: "bg-red-400" },
-    suspended:       { label: "Suspended",       cls: "bg-red-700/25 text-white border-red-500/50 shadow-[0_0_8px_rgba(239,68,68,0.2)]",              dot: "bg-red-500" },
-    mandate_pending: { label: "Mandate Pending", cls: "bg-purple-500/20 text-white border-purple-400/50 shadow-[0_0_8px_rgba(192,132,252,0.2)]",   dot: "bg-purple-400" },
-    cancelled:       { label: "Cancelled",       cls: "bg-slate-700/40 text-white border-slate-500/40",                                             dot: "bg-slate-500" },
-    expired:         { label: "Expired",         cls: "bg-slate-700/40 text-white border-slate-500/40",                                             dot: "bg-slate-500" },
-    created:         { label: "Created",         cls: "bg-slate-600/30 text-white border-slate-500/40",                                             dot: "bg-slate-500" },
-    inactive:        { label: "Inactive",        cls: "bg-slate-600/30 text-white border-slate-500/40",                                             dot: "bg-slate-500" },
+    // Plain light-theme classes: the old "text-white on a 20% tint" was unreadable.
+    active:          { label: "Active",          cls: "bg-emerald-50 text-emerald-700 border-emerald-200", dot: "bg-emerald-500" },
+    trial:           { label: "Trial",           cls: "bg-sky-50 text-sky-700 border-sky-200",             dot: "bg-sky-500" },
+    grace:           { label: "Grace Period",    cls: "bg-amber-50 text-amber-800 border-amber-200",       dot: "bg-amber-500" },
+    retrying:        { label: "Retrying",        cls: "bg-orange-50 text-orange-700 border-orange-200",    dot: "bg-orange-500" },
+    payment_failed:  { label: "Payment Failed",  cls: "bg-red-50 text-red-700 border-red-200",             dot: "bg-red-500" },
+    suspended:       { label: "Suspended",       cls: "bg-rose-50 text-rose-700 border-rose-200",          dot: "bg-rose-500" },
+    mandate_pending: { label: "Mandate Pending", cls: "bg-violet-50 text-violet-700 border-violet-200",    dot: "bg-violet-500" },
+    cancelled:       { label: "Cancelled",       cls: "bg-gray-100 text-gray-600 border-gray-200",         dot: "bg-gray-400" },
+    expired:         { label: "Expired",         cls: "bg-gray-100 text-gray-600 border-gray-200",         dot: "bg-gray-400" },
+    created:         { label: "Created",         cls: "bg-gray-100 text-gray-600 border-gray-200",         dot: "bg-gray-400" },
+    inactive:        { label: "Inactive",        cls: "bg-gray-100 text-gray-600 border-gray-200",         dot: "bg-gray-400" },
   };
 
-  const s = map[status] ?? { label: status, cls: "bg-slate-600/30 text-white border-slate-500/40", dot: "bg-slate-500" };
+  const s = map[status] ?? { label: status, cls: "bg-gray-100 text-gray-600 border-gray-200", dot: "bg-gray-400" };
 
   return (
     <span className={cn(
@@ -263,11 +268,11 @@ function StatusBadge({ status }: { status: string }) {
 
 // ─── Button ───────────────────────────────────────────────────────────────
 const btnColors: Record<string, string> = {
-  emerald: "border-emerald-500 text-white bg-emerald-600/30 hover:bg-emerald-600/50",
-  yellow:  "border-yellow-500 text-white bg-yellow-600/30 hover:bg-yellow-600/50",
-  red:     "border-red-500 text-white bg-red-600/30 hover:bg-red-600/50",
-  blue:    "border-blue-500 text-white bg-blue-600/30 hover:bg-blue-600/50",
-  slate:   "border-slate-500 text-white bg-slate-700/50 hover:bg-slate-600/50",
+  emerald: "border-emerald-200 text-emerald-700 bg-emerald-50 hover:bg-emerald-100",
+  yellow:  "border-amber-200 text-amber-800 bg-amber-50 hover:bg-amber-100",
+  red:     "border-red-200 text-red-700 bg-red-50 hover:bg-red-100",
+  blue:    "border-sky-200 text-sky-700 bg-sky-50 hover:bg-sky-100",
+  slate:   "border-gray-200 text-gray-700 bg-white hover:bg-gray-50",
 };
 
 function Btn({ children, color, onClick, disabled }: {

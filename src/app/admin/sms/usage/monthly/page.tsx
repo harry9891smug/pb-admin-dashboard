@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { adminSmsUsageMonthly } from "@/lib/api/admin/sms";
 import { RefreshCw } from "lucide-react";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import PageShell from "@/components/ui/PageShell";
 
 export default function SmsUsageMonthlyPage() {
   const [rows, setRows] = useState<any[]>([]);
@@ -44,7 +45,8 @@ export default function SmsUsageMonthlyPage() {
 
   return (
     <ProtectedRoute requiredPermission="business.view">
-    <div className="p-6 space-y-6">
+    <PageShell
+      top={<>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-black">SMS Usage – Monthly</h1>
@@ -82,7 +84,9 @@ export default function SmsUsageMonthlyPage() {
         <StatCard title="Failed" value={totals.failed} accent="text-red-400" />
       </div>
 
-      <div className="rounded-xl border border-slate-800 overflow-hidden bg-slate-950">
+      </>}
+    >
+      <div className="rounded-xl border border-slate-800 overflow-hidden bg-white">
         <table className="w-full text-sm">
           <thead className="bg-slate-900 text-slate-300">
             <tr>
@@ -122,7 +126,7 @@ export default function SmsUsageMonthlyPage() {
           </tbody>
         </table>
       </div>
-    </div>
+    </PageShell>
     </ProtectedRoute>
   );
 }

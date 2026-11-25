@@ -23,6 +23,7 @@ import {
 import { toast } from "react-hot-toast";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import Pagination from "@/components/ui/Pagination";
+import PageShell from "@/components/ui/PageShell";
 
 interface Offer {
   id: number;
@@ -217,11 +218,20 @@ export default function OffersPage() {
   const fetchBusinesses = async () => {
     try {
       setIsLoadingBusinesses(true);
-      const businessesData = await getBusinesses({ limit: 100, offset: 0 });
-      setBusinesses(businessesData.items || []);
+      // API caps a page at 100: keep paging so every business is selectable.
+      const all: any[] = [];
+      let offset = 0;
+      for (let i = 0; i < 50; i++) {
+        const res = await getBusinesses({ limit: 100, offset });
+        const batch = res.items ?? [];
+        all.push(...batch);
+        offset += batch.length;
+        if (batch.length < 100 || offset >= (res.totalFiltered ?? offset)) break;
+      }
+      setBusinesses(all as any);
 
-      if ((businessesData.items || []).length > 0 && !selectedBusinessId) {
-        setSelectedBusinessId(businessesData.items[0].id);
+      if (all.length > 0 && !selectedBusinessId) {
+        setSelectedBusinessId(all[0].id);
       }
     } catch (err: any) {
       toast.error(err.message || "Failed to load businesses");
@@ -608,7 +618,8 @@ export default function OffersPage() {
 
   return (
     <ProtectedRoute requiredPermission="offer.view">
-      <div className="space-y-6">
+      <PageShell
+        top={<>
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
@@ -695,6 +706,20 @@ export default function OffersPage() {
           </div>
         </div>
 
+        </>}
+        footer={
+          totalFiltered > 0 ? (
+            <Pagination
+              page={page}
+              totalPages={Math.max(1, Math.ceil(totalFiltered / PAGE_SIZE))}
+              total={totalFiltered}
+              loading={loading}
+              onPageChange={setPage}
+              itemLabel="offers"
+            />
+          ) : null
+        }
+      >
         {/* Offers list */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
@@ -874,19 +899,8 @@ export default function OffersPage() {
               ))}
             </div>
           )}
-
-          {totalFiltered > 0 && (
-            <Pagination
-              page={page}
-              totalPages={Math.max(1, Math.ceil(totalFiltered / PAGE_SIZE))}
-              total={totalFiltered}
-              loading={loading}
-              onPageChange={setPage}
-              itemLabel="offers"
-            />
-          )}
         </div>
-      </div>
+      </PageShell>
 
       {/* ========================= */}
       {/* ✅ CREATE OFFER MODAL */}

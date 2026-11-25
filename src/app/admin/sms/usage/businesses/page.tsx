@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { adminSmsUsageBusinesses } from "@/lib/api/admin/sms";
 import { RefreshCw } from "lucide-react";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import PageShell from "@/components/ui/PageShell";
+import Link from "next/link";
 
 function currentMonthYYYYMM() {
   const d = new Date();
@@ -49,7 +51,8 @@ export default function SmsUsageBusinessesPage() {
 
   return (
     <ProtectedRoute requiredPermission="business.view">
-    <div className="p-6 space-y-6">
+    <PageShell
+      top={<>
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -93,8 +96,10 @@ export default function SmsUsageBusinessesPage() {
         <StatCard title="Pending" value={totals.pending} accent="text-yellow-400" />
       </div>
 
+      </>}
+    >
       {/* Table */}
-      <div className="rounded-xl border border-slate-800 overflow-hidden bg-slate-950">
+      <div className="rounded-xl border border-slate-800 overflow-hidden bg-white">
         <table className="w-full text-sm">
           <thead className="bg-slate-900 text-slate-300">
             <tr>
@@ -126,9 +131,13 @@ export default function SmsUsageBusinessesPage() {
                   className="border-t border-slate-800 hover:bg-slate-900/40"
                 >
                   <td className="p-3">
-                    <div className="font-medium text-slate-100">
+                    <Link
+                      href={`/admin/sms/usage/business/${r.businessId}/monthly`}
+                      className="font-medium text-violet-700 hover:underline"
+                      title="Month-wise usage"
+                    >
                       {r.businessName || `Business #${r.businessId}`}
-                    </div>
+                    </Link>
                     <div className="text-xs text-slate-500">ID: {r.businessId}</div>
                   </td>
                   <td className="p-3 text-right font-medium">{r.total}</td>
@@ -141,7 +150,7 @@ export default function SmsUsageBusinessesPage() {
           </tbody>
         </table>
       </div>
-    </div>
+    </PageShell>
     </ProtectedRoute>
   );
 }

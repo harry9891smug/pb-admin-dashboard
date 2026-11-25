@@ -263,6 +263,131 @@ table th, table td { padding-top: 0.7rem; padding-bottom: 0.7rem; }
 /* Page titles */
 main h1 { letter-spacing: -0.02em; }
 
+/* =========================================================
+   PAGE SHELL – fixed top card + independently scrolling list card
+   ========================================================= */
+/* A page that uses the shell owns its scrolling, so the outer area stays put. */
+main:has(.pb-shell) { overflow: hidden; }
+main:has(.pb-shell) > .pb-page-root { height: 100%; }
+.pb-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  gap: 1rem;
+}
+
+/* ----- top card ----- */
+.pb-top-card {
+  position: relative;
+  flex: none;
+  overflow: hidden;
+  border-radius: 1.6rem;
+  padding: 1.4rem 1.5rem;
+  background:
+    linear-gradient(135deg, #ffffff 0%, #ffffff 55%, #f5f0ff 100%);
+  border: 1px solid #e9e3fb;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 14px 40px rgba(124, 58, 237, 0.08);
+}
+.pb-top-card::before {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; top: 0;
+  height: 5px;
+  background: linear-gradient(90deg, #7c3aed, #d946ef 55%, #10b981);
+}
+.pb-top-glow {
+  position: absolute;
+  right: -60px;
+  top: -80px;
+  width: 260px;
+  height: 260px;
+  border-radius: 9999px;
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.20), transparent 68%);
+  pointer-events: none;
+}
+.pb-top-card h1 {
+  font-size: 1.7rem;
+  line-height: 2.1rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  background: linear-gradient(90deg, #1f1147, #5b21b6);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+/* stat tiles inside the top card: lighter, flatter */
+.pb-top-card .grid > .rounded-xl.bg-slate-900\/60,
+.pb-top-card .grid > .rounded-xl.bg-slate-950 {
+  box-shadow: none;
+  border: 1px solid #efeafc;
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(4px);
+}
+/* the filter bar loses its own card – it lives in the top card now */
+.pb-top-card .rounded-xl.bg-slate-950.p-4:not(.grid > *),
+.pb-top-card .rounded-xl.bg-slate-900\/60.p-4:not(.grid > *) {
+  background: transparent;
+  box-shadow: none;
+  border: 0;
+  padding: 0;
+}
+.pb-top-card input:not([type="checkbox"]):not([type="radio"]),
+.pb-top-card select {
+  min-height: 2.75rem;
+  border-radius: 0.9rem;
+  border: 1.5px solid #e5e1f5;
+  background-color: #ffffff;
+}
+
+/* ----- list card ----- */
+.pb-list-card {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 1.6rem;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid #ebe7f8;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.03), 0 10px 30px rgba(16, 24, 40, 0.05);
+  backdrop-filter: blur(6px);
+}
+.pb-list-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 1rem 1.1rem;
+  scroll-behavior: smooth;
+}
+.pb-list-scroll > * + * { margin-top: 0.85rem; }
+.pb-list-scroll > .fixed { margin: 0 !important; }
+.pb-list-footer {
+  flex: none;
+  padding: 0.65rem 1.2rem;
+  border-top: 1px solid #efeafc;
+  background: rgba(250, 249, 255, 0.9);
+}
+.pb-list-footer > div { padding-top: 0; }
+/* tables inside the list card scroll with the card, not on their own */
+.pb-list-scroll div.overflow-x-auto { max-height: none; overflow-y: visible; }
+.pb-list-scroll div.overflow-x-auto table thead th { top: -1rem; }
+
+/* On phones the fixed-top layout would leave almost no room for the list, so the
+   whole page scrolls normally there. */
+@media (max-width: 767px) {
+  main:has(.pb-shell) { overflow-y: auto; }
+  .pb-shell { height: auto; }
+  .pb-list-card { overflow: visible; }
+  .pb-list-scroll { overflow: visible; }
+}
+
+@media (max-width: 767px) {
+  .pb-top-card { padding: 1.1rem 1rem; border-radius: 1.3rem; }
+  .pb-top-card h1 { font-size: 1.35rem; line-height: 1.7rem; }
+  .pb-list-scroll { padding: 0.75rem; }
+}
+
 /* ---------- Dark violet sidebar ---------- */
 .pb-sidebar {
   background:
@@ -330,7 +455,7 @@ span.rounded-full.border { font-weight: 600; letter-spacing: 0.01em; }
 .space-y-3 > .rounded-xl.bg-slate-900\/60,
 .space-y-4 > .rounded-xl.bg-slate-900\/60 {
   position: relative;
-  overflow: hidden;
+  /* no overflow:hidden here – rows contain dropdown menus that must not be clipped */
   border-radius: 1.1rem;
   padding: 1.1rem 1.35rem 1.1rem 1.6rem;
   border: 1px solid var(--pb-line);
@@ -346,6 +471,7 @@ span.rounded-full.border { font-weight: 600; letter-spacing: 0.01em; }
   top: 0;
   bottom: 0;
   width: 5px;
+  border-radius: 1.1rem 0 0 1.1rem;
   background: linear-gradient(180deg, #8b5cf6, #d946ef 55%, #10b981);
   opacity: 0.85;
 }

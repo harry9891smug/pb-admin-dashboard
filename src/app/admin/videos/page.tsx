@@ -7,6 +7,7 @@ import { Pencil, Trash2, Play, Upload, Film, Plus, X, RotateCcw } from "lucide-r
 
 import { isAuthenticated } from "@/lib/api";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import PageShell from "@/components/ui/PageShell";
 import {
   adminListVideos,
   adminCreateVideo,
@@ -238,8 +239,8 @@ export default function VideosPage() {
 
   return (
     <ProtectedRoute requiredPermission="business.view">
-      <div className="mx-auto max-w-6xl space-y-6">
-        {/* Header */}
+      <PageShell
+        top={
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-3">
             <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-100 text-violet-600">
@@ -261,7 +262,8 @@ export default function VideosPage() {
             <Plus className="h-4 w-4" /> Add Video
           </button>
         </div>
-
+        }
+      >
         {/* List */}
         <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
           {loading ? (
@@ -569,7 +571,7 @@ export default function VideosPage() {
             </div>
           </div>
         ) : null}
-      </div>
+      </PageShell>
     </ProtectedRoute>
   );
 }

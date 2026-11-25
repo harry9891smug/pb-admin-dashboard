@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import Pagination from "@/components/ui/Pagination";
+import PageShell from "@/components/ui/PageShell";
 import { toast } from "react-hot-toast";
 
 import {
@@ -759,7 +760,9 @@ const stateOptions = useMemo(() => {
 
   return (
     <ProtectedRoute requiredPermission="business.view">
-      <div className="space-y-6">
+      <>
+      <PageShell
+        top={<>
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
@@ -878,6 +881,20 @@ const stateOptions = useMemo(() => {
           </div>
         </div>
 
+        </>}
+        footer={
+          totalFiltered > 0 ? (
+            <Pagination
+              page={page}
+              totalPages={Math.max(1, Math.ceil(totalFiltered / PAGE_SIZE))}
+              total={totalFiltered}
+              loading={loading}
+              onPageChange={setPage}
+              itemLabel="businesses"
+            />
+          ) : null
+        }
+      >
         {/* List */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
@@ -1009,18 +1026,8 @@ const stateOptions = useMemo(() => {
               ))}
             </div>
           )}
-
-          {totalFiltered > 0 && (
-            <Pagination
-              page={page}
-              totalPages={Math.max(1, Math.ceil(totalFiltered / PAGE_SIZE))}
-              total={totalFiltered}
-              loading={loading}
-              onPageChange={setPage}
-              itemLabel="businesses"
-            />
-          )}
         </div>
+      </PageShell>
 
         {/* ========================= */}
         {/* ✅ CREATE BUSINESS MODAL */}
@@ -1573,7 +1580,7 @@ const stateOptions = useMemo(() => {
             </div>
           </div>
         )}
-      </div>
+      </>
     </ProtectedRoute>
   );
 }

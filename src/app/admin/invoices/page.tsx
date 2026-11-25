@@ -2,6 +2,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import Pagination from "@/components/ui/Pagination";
+import PageShell from "@/components/ui/PageShell";
 import { toast } from "react-hot-toast";
 import { 
   getBusinesses, 
@@ -130,13 +131,23 @@ export default function AdminInvoicesPage() {
 
   const fetchBusinesses = async () => {
     try {
-      const res = await getBusinesses({ limit: 200, offset: 0 });
-      setBusinesses(res.items);
+      // The API caps each page at 100, so keep paging until every business is
+      // loaded — otherwise the picker silently drops everything after #100.
+      const all: any[] = [];
+      let offset = 0;
+      for (let i = 0; i < 50; i++) {
+        const res = await getBusinesses({ limit: 100, offset });
+        const batch = res.items ?? [];
+        all.push(...batch);
+        offset += batch.length;
+        if (batch.length < 100 || offset >= (res.totalFiltered ?? offset)) break;
+      }
+      setBusinesses(all as any);
 
-      if (res.items?.length && selectedBusinessId === "") {
-        setSelectedBusinessId(res.items[0].id);
+      if (all.length && selectedBusinessId === "") {
+        setSelectedBusinessId(all[0].id);
         // Set default business in create form
-        setCreateForm(prev => ({ ...prev, businessId: res.items[0].id }));
+        setCreateForm(prev => ({ ...prev, businessId: all[0].id }));
       }
     } catch (e: any) {
       toast.error(e.message || "Failed to load businesses");
@@ -498,7 +509,8 @@ export default function AdminInvoicesPage() {
 
   return (
     <ProtectedRoute requiredPermission="invoice.view">
-      <div className="space-y-6">
+      <PageShell
+        top={<>
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
@@ -616,7 +628,6 @@ export default function AdminInvoicesPage() {
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-700 bg-slate-900 text-slate-100 text-sm outline-none"
-                  disabled={loading}
                 />
               </div>
             </div>
@@ -644,6 +655,20 @@ export default function AdminInvoicesPage() {
           </div>
         </div>
 
+        </>}
+        footer={
+          totalFiltered > 0 ? (
+            <Pagination
+              page={page}
+              totalPages={Math.max(1, Math.ceil(totalFiltered / PAGE_SIZE))}
+              total={totalFiltered}
+              loading={loading}
+              onPageChange={setPage}
+              itemLabel="invoices"
+            />
+          ) : null
+        }
+      >
         {/* Invoices List */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
@@ -810,19 +835,8 @@ export default function AdminInvoicesPage() {
               ))}
             </div>
           )}
-
-          {totalFiltered > 0 && (
-            <Pagination
-              page={page}
-              totalPages={Math.max(1, Math.ceil(totalFiltered / PAGE_SIZE))}
-              total={totalFiltered}
-              loading={loading}
-              onPageChange={setPage}
-              itemLabel="invoices"
-            />
-          )}
         </div>
-      </div>
+      </PageShell>
 
       {/* ========================= */}
       {/* ✅ CREATE INVOICE MODAL */}

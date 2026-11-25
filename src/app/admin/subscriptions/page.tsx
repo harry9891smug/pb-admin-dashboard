@@ -10,6 +10,7 @@ import {
 } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import PageShell from "@/components/ui/PageShell";
 
 type Row = {
   id: number;
@@ -107,7 +108,8 @@ const fetchData = async () => {
 
   return (
     <ProtectedRoute requiredPermission="subscription.view">
-    <div className="p-6 space-y-6">
+    <PageShell
+      top={<>
       {/* Header */}
       <div className="flex items-end justify-between gap-4">
         <div>
@@ -187,15 +189,51 @@ const fetchData = async () => {
         <div className="flex items-end gap-2">
           <button
             onClick={() => fetchData()}
-            className="w-full bg-emerald-500/20 border border-emerald-500/40 text-white rounded-lg px-3 py-2 text-sm font-medium hover:bg-emerald-500/25"
+            className="w-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-800 rounded-lg px-3 py-2 text-sm font-medium hover:bg-emerald-500/25"
           >
             Refresh
           </button>
         </div>
       </div>
 
+      </>}
+      footer={
+        <div className="flex items-center justify-between">
+          <button
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page <= 1}
+            className={cn(
+              "px-4 py-2 rounded-lg text-sm border",
+              page <= 1
+                ? "border-slate-800 text-slate-600 cursor-not-allowed"
+                : "border-slate-700 text-slate-200 hover:bg-slate-800"
+            )}
+          >
+            Prev
+          </button>
+
+          <div className="text-sm text-slate-400">
+            Page <span className="font-semibold text-gray-900">{page}</span> of{" "}
+            <span className="font-semibold text-gray-900">{totalPages}</span>
+          </div>
+
+          <button
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={page >= totalPages}
+            className={cn(
+              "px-4 py-2 rounded-lg text-sm border",
+              page >= totalPages
+                ? "border-slate-800 text-slate-600 cursor-not-allowed"
+                : "border-slate-700 text-slate-200 hover:bg-slate-800"
+            )}
+          >
+            Next
+          </button>
+        </div>
+      }
+    >
       {/* Table */}
-      <div className="border border-slate-800 rounded-xl overflow-hidden">
+      <div className="border border-slate-800 rounded-xl overflow-hidden bg-white">
         <table className="w-full text-sm">
           <thead className="bg-blue-900/70">
             <tr className="text-white-300">
@@ -294,41 +332,7 @@ const fetchData = async () => {
           </tbody>
         </table>
       </div>
-
-      {/* Pagination */}
-      <div className="flex items-center justify-between">
-        <button
-          onClick={() => setPage((p) => Math.max(1, p - 1))}
-          disabled={page <= 1}
-          className={cn(
-            "px-4 py-2 rounded-lg text-sm border",
-            page <= 1
-              ? "border-slate-800 text-slate-600 cursor-not-allowed"
-              : "border-slate-700 text-slate-200 hover:bg-slate-800"
-          )}
-        >
-          Prev
-        </button>
-
-        <div className="text-sm text-slate-400">
-          Page <span className="text-white">{page}</span> of{" "}
-          <span className="text-white">{totalPages}</span>
-        </div>
-
-        <button
-          onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-          disabled={page >= totalPages}
-          className={cn(
-            "px-4 py-2 rounded-lg text-sm border",
-            page >= totalPages
-              ? "border-slate-800 text-slate-600 cursor-not-allowed"
-              : "border-slate-700 text-slate-200 hover:bg-slate-800"
-          )}
-        >
-          Next
-        </button>
-      </div>
-    </div>
+    </PageShell>
     </ProtectedRoute>
   );
 }

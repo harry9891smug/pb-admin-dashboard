@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import Pagination from "@/components/ui/Pagination";
+import PageShell from "@/components/ui/PageShell";
 import { toast } from "react-hot-toast";
 import {
   Plus,
@@ -347,7 +348,9 @@ export default function AdvertisementsPage() {
 
   return (
     <ProtectedRoute requiredPermission="offer.view">
-      <div className="space-y-6">
+      <>
+      <PageShell
+        top={<>
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
@@ -425,6 +428,19 @@ export default function AdvertisementsPage() {
           </div>
         </div>
 
+        </>}
+        footer={
+          filtered.length > 0 ? (
+            <Pagination
+              page={page}
+              totalPages={Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))}
+              total={filtered.length}
+              onPageChange={setPage}
+              itemLabel="advertisements"
+            />
+          ) : null
+        }
+      >
         {/* List */}
         <div className="grid gap-4">
           {loading && items.length === 0 ? (
@@ -522,16 +538,7 @@ export default function AdvertisementsPage() {
             ))
           )}
         </div>
-
-        {filtered.length > 0 && (
-          <Pagination
-            page={page}
-            totalPages={Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))}
-            total={filtered.length}
-            onPageChange={setPage}
-            itemLabel="advertisements"
-          />
-        )}
+      </PageShell>
 
         {/* Modal */}
         {(isCreateOpen || isEditOpen) && (
@@ -745,7 +752,7 @@ export default function AdvertisementsPage() {
             </div>
           </div>
         )}
-      </div>
+      </>
     </ProtectedRoute>
   );
 }

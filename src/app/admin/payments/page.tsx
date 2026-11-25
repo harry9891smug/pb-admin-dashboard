@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import PageShell from "@/components/ui/PageShell";
 import { getAdminBillingInvoices } from "@/lib/api";
 import { Search, Calendar, RefreshCw, FileText, IndianRupee } from "lucide-react";
 
@@ -63,8 +64,10 @@ export default function PaymentsPage() {
 
   // filters
   const [q, setQ] = useState("");
-  const [from, setFrom] = useState("2026-02-01");
-  const [to, setTo] = useState("2026-02-10");
+  // Empty = no date limit. These used to be hardcoded to 1–10 Feb 2026, which
+  // hid every payment outside that window.
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
 
   const [pagination, setPagination] = useState({
     page: 1,
@@ -101,6 +104,21 @@ export default function PaymentsPage() {
     fetchBillingInvoices();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page]);
+
+  // Search / date changes re-query automatically (debounced) and go back to page 1.
+  const firstRun = useRef(true);
+  useEffect(() => {
+    if (firstRun.current) {
+      firstRun.current = false;
+      return;
+    }
+    const t = setTimeout(() => {
+      if (page !== 1) setPage(1);
+      else fetchBillingInvoices();
+    }, 450);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [q, from, to]);
 
   const filteredRows = useMemo(() => {
     const s = q.trim().toLowerCase();
@@ -140,7 +158,8 @@ export default function PaymentsPage() {
 
   return (
     <ProtectedRoute requiredPermission="invoice.view">
-      <div className="space-y-6">
+      <PageShell
+        top={<>
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
@@ -234,7 +253,6 @@ export default function PaymentsPage() {
                   value={q}
                   onChange={(e) => setQ(e.target.value)}
                   className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-700 bg-slate-900 text-slate-100 text-sm outline-none"
-                  disabled={loading}
                 />
               </div>
             </div>
@@ -249,7 +267,6 @@ export default function PaymentsPage() {
                   value={from}
                   onChange={(e) => setFrom(e.target.value)}
                   className="w-full pl-10 pr-3 py-2.5 rounded-lg border border-slate-700 bg-slate-900 text-slate-100 text-sm outline-none"
-                  disabled={loading}
                 />
               </div>
             </div>
@@ -264,7 +281,6 @@ export default function PaymentsPage() {
                   value={to}
                   onChange={(e) => setTo(e.target.value)}
                   className="w-full pl-10 pr-3 py-2.5 rounded-lg border border-slate-700 bg-slate-900 text-slate-100 text-sm outline-none"
-                  disabled={loading}
                 />
               </div>
             </div>
@@ -288,6 +304,32 @@ export default function PaymentsPage() {
           </div>
         </div>
 
+        </>}
+        footer={
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-slate-500">
+              Page {pagination.page} of {pagination.totalPages} • Total {pagination.total}
+            </p>
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={loading || page <= 1}
+                className="px-3 py-2 rounded-lg border border-slate-700 text-slate-300 text-sm hover:bg-slate-800 disabled:opacity-50"
+              >
+                Prev
+              </button>
+              <button
+                onClick={() => setPage((p) => Math.min(pagination.totalPages || p, p + 1))}
+                disabled={loading || page >= pagination.totalPages}
+                className="px-3 py-2 rounded-lg border border-slate-700 text-slate-300 text-sm hover:bg-slate-800 disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        }
+      >
         {/* List */}
         {loading && filteredRows.length === 0 ? (
           <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-12 text-center">
@@ -444,31 +486,7 @@ export default function PaymentsPage() {
 </div>
 
         )}
-
-        {/* Pagination */}
-        <div className="flex items-center justify-between pt-2">
-          <p className="text-sm text-slate-500">
-            Page {pagination.page} of {pagination.totalPages} • Total {pagination.total}
-          </p>
-
-          <div className="flex gap-2">
-            <button
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={loading || page <= 1}
-              className="px-3 py-2 rounded-lg border border-slate-700 text-slate-300 text-sm hover:bg-slate-800 disabled:opacity-50"
-            >
-              Prev
-            </button>
-            <button
-              onClick={() => setPage((p) => Math.min(pagination.totalPages || p, p + 1))}
-              disabled={loading || page >= pagination.totalPages}
-              className="px-3 py-2 rounded-lg border border-slate-700 text-slate-300 text-sm hover:bg-slate-800 disabled:opacity-50"
-            >
-              Next
-            </button>
-          </div>
-        </div>
-      </div>
+      </PageShell>
     </ProtectedRoute>
   );
 }

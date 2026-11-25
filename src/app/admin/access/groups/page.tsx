@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Pagination from "@/components/ui/Pagination";
+import PageShell from "@/components/ui/PageShell";
 import {
   Search,
   Plus,
@@ -209,7 +210,9 @@ export default function GroupsPage() {
   /* ---------------- UI ---------------- */
   return (
     <ProtectedRoute requiredPermission="role.maintain_role">
-      <div className="space-y-6">
+      <>
+      <PageShell
+        top={<>
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
@@ -262,6 +265,19 @@ export default function GroupsPage() {
           </div>
         </div>
 
+        </>}
+        footer={
+          filtered.length > 0 ? (
+            <Pagination
+              page={page}
+              totalPages={Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))}
+              total={filtered.length}
+              onPageChange={setPage}
+              itemLabel="groups"
+            />
+          ) : null
+        }
+      >
         {/* List */}
         <div className="grid gap-4">
           {loading && items.length === 0 ? (
@@ -322,16 +338,7 @@ export default function GroupsPage() {
             ))
           )}
         </div>
-
-        {filtered.length > 0 && (
-          <Pagination
-            page={page}
-            totalPages={Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))}
-            total={filtered.length}
-            onPageChange={setPage}
-            itemLabel="groups"
-          />
-        )}
+      </PageShell>
 
         {/* CREATE / EDIT MODAL */}
         {(isCreateOpen || isEditOpen) && (
@@ -417,7 +424,7 @@ export default function GroupsPage() {
             </div>
           </div>
         )}
-      </div>
+      </>
     </ProtectedRoute>
   );
 }

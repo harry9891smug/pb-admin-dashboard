@@ -16,6 +16,7 @@ import { toast } from "react-hot-toast";
 
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import Pagination from "@/components/ui/Pagination";
+import PageShell from "@/components/ui/PageShell";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   adminListTestAccounts,
@@ -226,7 +227,9 @@ export default function TestAccountsPage() {
   /* ---------------- UI ---------------- */
   return (
     <ProtectedRoute requiredPermission="test_account.view">
-      <div className="space-y-6">
+      <>
+      <PageShell
+        top={<>
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
@@ -308,6 +311,20 @@ export default function TestAccountsPage() {
           </select>
         </div>
 
+        </>}
+        footer={
+          totalFiltered > 0 ? (
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              total={totalFiltered}
+              loading={loading}
+              onPageChange={setPage}
+              itemLabel="test accounts"
+            />
+          ) : null
+        }
+      >
         {/* List */}
         <div className="grid gap-4">
           {loading && items.length === 0 ? (
@@ -413,17 +430,7 @@ export default function TestAccountsPage() {
             ))
           )}
         </div>
-
-        {totalFiltered > 0 && (
-          <Pagination
-            page={page}
-            totalPages={totalPages}
-            total={totalFiltered}
-            loading={loading}
-            onPageChange={setPage}
-            itemLabel="test accounts"
-          />
-        )}
+      </PageShell>
 
         {/* Create modal */}
         {isCreateOpen && (
@@ -590,7 +597,7 @@ export default function TestAccountsPage() {
             </div>
           </div>
         )}
-      </div>
+      </>
     </ProtectedRoute>
   );
 }

@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import Pagination from "@/components/ui/Pagination";
+import PageShell from "@/components/ui/PageShell";
 import { toast } from "react-hot-toast";
 
 import {
@@ -241,7 +242,9 @@ export default function TeamMembersPage() {
   /* ---------------- UI ---------------- */
   return (
     <ProtectedRoute requiredPermission="team.view">
-      <div className="space-y-6">
+      <>
+      <PageShell
+        top={<>
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
@@ -298,6 +301,20 @@ export default function TeamMembersPage() {
           </div>
         </div>
 
+        </>}
+        footer={
+          totalFiltered > 0 ? (
+            <Pagination
+              page={page}
+              totalPages={Math.max(1, Math.ceil(totalFiltered / PAGE_SIZE))}
+              total={totalFiltered}
+              loading={loading}
+              onPageChange={setPage}
+              itemLabel="team members"
+            />
+          ) : null
+        }
+      >
         {/* List */}
         <div className="grid gap-4">
           {loading && items.length === 0 ? (
@@ -364,17 +381,7 @@ export default function TeamMembersPage() {
             ))
           )}
         </div>
-
-        {totalFiltered > 0 && (
-          <Pagination
-            page={page}
-            totalPages={Math.max(1, Math.ceil(totalFiltered / PAGE_SIZE))}
-            total={totalFiltered}
-            loading={loading}
-            onPageChange={setPage}
-            itemLabel="team members"
-          />
-        )}
+      </PageShell>
 
         {/* Modal */}
         {(isCreateOpen || isEditOpen) && (
@@ -487,7 +494,7 @@ export default function TeamMembersPage() {
             </div>
           </div>
         )}
-      </div>
+      </>
     </ProtectedRoute>
   );
 }

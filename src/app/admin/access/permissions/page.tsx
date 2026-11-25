@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Search, Plus, RefreshCw, AlertCircle, Trash2, CheckCircle, KeyRound } from "lucide-react";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import Pagination from "@/components/ui/Pagination";
+import PageShell from "@/components/ui/PageShell";
 import { toast } from "react-hot-toast";
 
 import {
@@ -117,7 +118,9 @@ export default function PermissionsPage() {
 
   return (
     <ProtectedRoute requiredPermission="permission.view_permission">
-      <div className="space-y-6">
+      <>
+      <PageShell
+        top={<>
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
@@ -172,6 +175,19 @@ export default function PermissionsPage() {
           </div>
         </div>
 
+        </>}
+        footer={
+          filtered.length > 0 ? (
+            <Pagination
+              page={page}
+              totalPages={Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))}
+              total={filtered.length}
+              onPageChange={setPage}
+              itemLabel="permissions"
+            />
+          ) : null
+        }
+      >
         {/* List */}
         <div className="grid gap-4">
           {loading && items.length === 0 ? (
@@ -214,16 +230,7 @@ export default function PermissionsPage() {
             ))
           )}
         </div>
-
-        {filtered.length > 0 && (
-          <Pagination
-            page={page}
-            totalPages={Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))}
-            total={filtered.length}
-            onPageChange={setPage}
-            itemLabel="permissions"
-          />
-        )}
+      </PageShell>
 
         {/* Modal */}
         {isCreateOpen && (
@@ -292,7 +299,7 @@ export default function PermissionsPage() {
             </div>
           </div>
         )}
-      </div>
+      </>
     </ProtectedRoute>
   );
 }

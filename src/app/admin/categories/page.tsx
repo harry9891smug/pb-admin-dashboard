@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import Pagination from "@/components/ui/Pagination";
+import PageShell from "@/components/ui/PageShell";
 import { toast } from "react-hot-toast";
 
 import {
@@ -198,7 +199,9 @@ export default function CategoriesPage() {
 
   return (
     <ProtectedRoute requiredPermission="business.view">
-      <div className="space-y-6">
+      <>
+      <PageShell
+        top={<>
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
@@ -276,6 +279,19 @@ export default function CategoriesPage() {
           </div>
         </div>
 
+        </>}
+        footer={
+          filtered.length > 0 ? (
+            <Pagination
+              page={page}
+              totalPages={Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))}
+              total={filtered.length}
+              onPageChange={setPage}
+              itemLabel="categories"
+            />
+          ) : null
+        }
+      >
         {/* List */}
         <div className="grid gap-4">
           {loading && items.length === 0 ? (
@@ -327,16 +343,7 @@ export default function CategoriesPage() {
             ))
           )}
         </div>
-
-        {filtered.length > 0 && (
-          <Pagination
-            page={page}
-            totalPages={Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))}
-            total={filtered.length}
-            onPageChange={setPage}
-            itemLabel="categories"
-          />
-        )}
+      </PageShell>
 
         {/* Modal */}
         {(isCreateOpen || isEditOpen) && (
@@ -408,7 +415,7 @@ export default function CategoriesPage() {
             </div>
           </div>
         )}
-      </div>
+      </>
     </ProtectedRoute>
   );
 }

@@ -6,6 +6,7 @@ import { toast } from "react-hot-toast";
 
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { useShowMore, ShowMoreButton } from "@/components/ui/ShowMore";
+import PageShell from "@/components/ui/PageShell";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   adminCreateReferral,
@@ -160,7 +161,9 @@ export default function ReferralsPage() {
 
   return (
     <ProtectedRoute requiredPermission="business.view">
-      <div className="space-y-6">
+      <>
+      <PageShell
+        top={<>
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">Referral Codes</h1>
@@ -211,6 +214,22 @@ export default function ReferralsPage() {
           </div>
         </div>
 
+        <div className="rounded-xl border border-slate-800 bg-slate-950 p-4">
+          <select
+            value={typeFilter}
+            onChange={(e) => setTypeFilter(e.target.value as any)}
+            className="px-3 py-2 rounded-lg border border-slate-700 bg-slate-950 text-sm text-slate-200 outline-none focus:border-emerald-400"
+          >
+            <option value="all">All owner types</option>
+            {REFERRAL_OWNER_TYPES.map((t) => (
+              <option key={t} value={t}>
+                {OWNER_LABELS[t]}
+              </option>
+            ))}
+          </select>
+        </div>
+        </>}
+      >
         {/* Leaderboard: performance per person */}
         <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-5">
           <h2 className="text-sm font-semibold text-slate-200 mb-3">Who is doing well</h2>
@@ -242,21 +261,6 @@ export default function ReferralsPage() {
               </table>
             </div>
           )}
-        </div>
-
-        <div className="rounded-xl border border-slate-800 bg-slate-950 p-4">
-          <select
-            value={typeFilter}
-            onChange={(e) => setTypeFilter(e.target.value as any)}
-            className="px-3 py-2 rounded-lg border border-slate-700 bg-slate-950 text-sm text-slate-200 outline-none focus:border-emerald-400"
-          >
-            <option value="all">All owner types</option>
-            {REFERRAL_OWNER_TYPES.map((t) => (
-              <option key={t} value={t}>
-                {OWNER_LABELS[t]}
-              </option>
-            ))}
-          </select>
         </div>
 
         <div className="grid gap-4">
@@ -341,6 +345,7 @@ export default function ReferralsPage() {
           )}
           <ShowMoreButton hasMore={codesMore.hasMore} rest={codesMore.rest} onClick={codesMore.more} />
         </div>
+      </PageShell>
 
         {/* Create modal */}
         {isCreateOpen && (
@@ -482,7 +487,7 @@ export default function ReferralsPage() {
             </div>
           </div>
         )}
-      </div>
+      </>
     </ProtectedRoute>
   );
 }

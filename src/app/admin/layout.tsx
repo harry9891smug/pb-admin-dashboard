@@ -48,7 +48,7 @@ export default function AdminLayout({
           onScroll={(e) => setShowTop(e.currentTarget.scrollTop > 400)}
           className="flex-1 min-h-0 overflow-y-auto px-4 py-5 sm:px-6 sm:py-6 lg:px-8 lg:py-8"
         >
-          <div className="pb-fade-up">{children}</div>
+          <div className="pb-fade-up pb-page-root">{children}</div>
         </main>
         {showTop && (
           <button

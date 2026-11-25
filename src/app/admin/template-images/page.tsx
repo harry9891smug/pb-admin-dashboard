@@ -16,6 +16,7 @@ import {
   type TemplateSourceType,
 } from "@/lib/api";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import PageShell from "@/components/ui/PageShell";
 
 type FormState = {
   id?: number;
@@ -248,7 +249,9 @@ const [previewTitle, setPreviewTitle] = useState<string>("");
 
   return (
     <ProtectedRoute requiredPermission="offer.view">
-    <div className="p-6 space-y-5">
+    <>
+    <PageShell
+      top={<>
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
@@ -353,8 +356,35 @@ const [previewTitle, setPreviewTitle] = useState<string>("");
         </div>
       </div>
 
+      </>}
+      footer={
+        <div className="flex items-center justify-between">
+          <div className="text-xs text-slate-500">
+            Page <span className="text-slate-200">{page}</span> /{" "}
+            <span className="text-slate-200">{totalPages}</span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              disabled={offset <= 0 || loading}
+              onClick={() => setOffset(Math.max(0, offset - limit))}
+              className="px-3 py-1.5 rounded-lg border border-slate-800 bg-slate-900 text-slate-200 disabled:opacity-50 hover:bg-slate-800 transition"
+            >
+              Prev
+            </button>
+            <button
+              disabled={offset + limit >= total || loading}
+              onClick={() => setOffset(offset + limit)}
+              className="px-3 py-1.5 rounded-lg border border-slate-800 bg-slate-900 text-slate-200 disabled:opacity-50 hover:bg-slate-800 transition"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      }
+    >
       {/* Table */}
-      <div className="bg-slate-950 border border-slate-800/80 rounded-xl overflow-hidden">
+      <div className="bg-white border border-slate-800/80 rounded-xl overflow-hidden">
         <div className="px-4 py-3 border-b border-slate-800 flex items-center justify-between">
           <div className="text-sm text-slate-300">
             Total: <span className="text-white font-semibold">{total}</span>
@@ -545,32 +575,8 @@ const [previewTitle, setPreviewTitle] = useState<string>("");
             </tbody>
           </table>
         </div>
-
-        {/* Pagination */}
-        <div className="px-4 py-3 border-t border-slate-800 flex items-center justify-between">
-          <div className="text-xs text-slate-500">
-            Page <span className="text-slate-200">{page}</span> /{" "}
-            <span className="text-slate-200">{totalPages}</span>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              disabled={offset <= 0 || loading}
-              onClick={() => setOffset(Math.max(0, offset - limit))}
-              className="px-3 py-1.5 rounded-lg border border-slate-800 bg-slate-900 text-slate-200 disabled:opacity-50 hover:bg-slate-800 transition"
-            >
-              Prev
-            </button>
-            <button
-              disabled={offset + limit >= total || loading}
-              onClick={() => setOffset(offset + limit)}
-              className="px-3 py-1.5 rounded-lg border border-slate-800 bg-slate-900 text-slate-200 disabled:opacity-50 hover:bg-slate-800 transition"
-            >
-              Next
-            </button>
-          </div>
-        </div>
       </div>
+    </PageShell>
 
       {/* Modal */}
       {open ? (
@@ -771,7 +777,7 @@ const [previewTitle, setPreviewTitle] = useState<string>("");
   </div>
 ) : null}
 
-    </div>
+    </>
     </ProtectedRoute>
   );
 }

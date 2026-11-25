@@ -20,6 +20,9 @@ import {
   Gift,
   Mail,
   Clapperboard,
+  Coins,
+  Star,
+  Rocket,
 } from "lucide-react";
 
 // Single source of truth for every navigable admin page — Sidebar renders it
@@ -59,6 +62,7 @@ export const navSections: NavSection[] = [
       { href: "/admin/businesses", label: "Businesses", icon: Building2, permission: "business.view", keywords: ["shops", "stores", "merchants"] },
       { href: "/admin/offers", label: "Offers", icon: BadgePercent, permission: "offer.view", keywords: ["deals", "discounts", "promotions"] },
       { href: "/admin/plans", label: "Plans", icon: Layers3, permission: "subscription.view", keywords: ["pricing", "packages"] },
+      { href: "/admin/pricing-tiers", label: "Add-on Pricing", icon: Coins, permission: "subscription.view", keywords: ["team licence", "sms credit", "tiers", "addon", "price"] },
       { href: "/admin/advertisements", label: "Advertisements", icon: Megaphone, permission: "offer.view", keywords: ["ads"] },
       { href: "/admin/videos", label: "Welcome Videos", icon: Clapperboard, permission: "business.view", keywords: ["video", "announcement", "welcome", "onboarding"] },
       { href: "/admin/categories", label: "Categories", icon: Tags, permission: "business.view" },
@@ -96,6 +100,8 @@ export const navSections: NavSection[] = [
     title: "Support Tools",
     items: [
       { href: "/admin/test-accounts", label: "PromoBandhu Test Accounts", icon: FlaskConical, permission: "test_account.view", keywords: ["reviewer", "demo", "qa", "trial", "google review", "promobandhu"] },
+      { href: "/admin/feedback", label: "App Feedback", icon: Star, permission: "feedback.view", keywords: ["rating", "reviews", "comments"] },
+      { href: "/admin/app-version", label: "App Version", icon: Rocket, permission: "app_version.update", keywords: ["release", "update", "force update", "apk"] },
       { href: "/admin/promodesk-users", label: "PromoDesk Users", icon: Smartphone, permission: "promodesk_user.view", keywords: ["promodesk", "sales executive", "sales manager", "field staff", "support app login"] },
     ],
   },

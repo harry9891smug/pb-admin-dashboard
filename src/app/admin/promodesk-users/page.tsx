@@ -14,6 +14,7 @@ import { toast } from "react-hot-toast";
 
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import Pagination from "@/components/ui/Pagination";
+import PageShell from "@/components/ui/PageShell";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   adminListPromoDeskUsers,
@@ -145,7 +146,9 @@ export default function PromoDeskUsersPage() {
 
   return (
     <ProtectedRoute requiredPermission="promodesk_user.view">
-      <div className="space-y-6">
+      <>
+      <PageShell
+        top={<>
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">PromoDesk Users</h1>
@@ -190,7 +193,20 @@ export default function PromoDeskUsersPage() {
             className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-700 bg-slate-950 text-sm outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20"
           />
         </div>
-
+        </>}
+        footer={
+          totalFiltered > 0 ? (
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              total={totalFiltered}
+              loading={loading}
+              onPageChange={setPage}
+              itemLabel="PromoDesk users"
+            />
+          ) : null
+        }
+      >
         <div className="grid gap-4">
           {loading && items.length === 0 ? (
             <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-6 text-slate-300">
@@ -246,17 +262,7 @@ export default function PromoDeskUsersPage() {
             ))
           )}
         </div>
-
-        {totalFiltered > 0 && (
-          <Pagination
-            page={page}
-            totalPages={totalPages}
-            total={totalFiltered}
-            loading={loading}
-            onPageChange={setPage}
-            itemLabel="PromoDesk users"
-          />
-        )}
+      </PageShell>
 
         {isCreateOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
@@ -345,7 +351,7 @@ export default function PromoDeskUsersPage() {
             </div>
           </div>
         )}
-      </div>
+      </>
     </ProtectedRoute>
   );
 }
