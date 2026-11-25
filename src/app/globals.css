@@ -320,3 +320,263 @@ main h1.text-2xl + p { color: #6b7280; }
 
 /* Status chips written as "border + tinted bg" read as proper pills */
 span.rounded-full.border { font-weight: 600; letter-spacing: 0.01em; }
+
+/* =========================================================
+   LIST ROWS – one rich card style for every list page
+   (accent rail, icon tile, lift on hover, round icon buttons)
+   ========================================================= */
+.grid.gap-3 > .rounded-xl.bg-slate-900\/60,
+.grid.gap-4 > .rounded-xl.bg-slate-900\/60,
+.space-y-3 > .rounded-xl.bg-slate-900\/60,
+.space-y-4 > .rounded-xl.bg-slate-900\/60 {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1.1rem;
+  padding: 1.1rem 1.35rem 1.1rem 1.6rem;
+  border: 1px solid var(--pb-line);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+.grid.gap-3 > .rounded-xl.bg-slate-900\/60::before,
+.grid.gap-4 > .rounded-xl.bg-slate-900\/60::before,
+.space-y-3 > .rounded-xl.bg-slate-900\/60::before,
+.space-y-4 > .rounded-xl.bg-slate-900\/60::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 5px;
+  background: linear-gradient(180deg, #8b5cf6, #d946ef 55%, #10b981);
+  opacity: 0.85;
+}
+.grid.gap-3 > .rounded-xl.bg-slate-900\/60:hover,
+.grid.gap-4 > .rounded-xl.bg-slate-900\/60:hover,
+.space-y-3 > .rounded-xl.bg-slate-900\/60:hover,
+.space-y-4 > .rounded-xl.bg-slate-900\/60:hover {
+  transform: translateY(-2px);
+  border-color: #d9ccfa;
+  box-shadow: 0 4px 8px rgba(16, 24, 40, 0.04), 0 16px 36px rgba(124, 58, 237, 0.13);
+}
+
+/* Title row: leading icon becomes a gradient tile */
+.rounded-xl.bg-slate-900\/60 .flex.items-center.gap-2 > svg:first-child,
+.rounded-xl.bg-slate-900\/60 .flex.flex-wrap.items-center.gap-2 > svg:first-child {
+  width: 2.1rem;
+  height: 2.1rem;
+  padding: 0.5rem;
+  border-radius: 0.7rem;
+  color: #6d28d9;
+  background: linear-gradient(135deg, #f1ebff, #fbe9ff);
+  flex-shrink: 0;
+}
+.rounded-xl.bg-slate-900\/60 h3 {
+  font-size: 1.02rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: #111827;
+}
+
+/* Icon-only action buttons (edit / delete / toggle) */
+.rounded-xl.bg-slate-900\/60 button.p-2 {
+  width: 2.25rem;
+  height: 2.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border-radius: 0.75rem;
+  border: 1px solid var(--pb-line);
+  background: #ffffff;
+  color: #6b7280;
+  transition: all 0.15s ease;
+}
+.rounded-xl.bg-slate-900\/60 button.p-2:hover {
+  border-color: #c4b5fd;
+  background: #f5f3ff;
+  color: #6d28d9;
+  transform: translateY(-1px);
+}
+.rounded-xl.bg-slate-900\/60 button.p-2[title="Delete"]:hover,
+.rounded-xl.bg-slate-900\/60 button.p-2.hover\:text-red-400:hover {
+  border-color: #fca5a5;
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+/* Text buttons inside rows (Switch off, Show again, etc.) */
+.rounded-xl.bg-slate-900\/60 button.border.border-slate-700 {
+  border-radius: 0.75rem;
+  background: #ffffff;
+  font-weight: 600;
+}
+.rounded-xl.bg-slate-900\/60 button.border.border-slate-700:hover {
+  border-color: #c4b5fd;
+  background: #f5f3ff;
+}
+
+/* Status pills */
+span.rounded-full.border.text-xs { padding: 0.2rem 0.65rem; }
+span.rounded-full.border.border-emerald-700,
+span.rounded-full.border.border-emerald-500\/40 {
+  background: #e7f8ef; color: #047857; border-color: #a7e3c4;
+}
+span.rounded-full.border.border-amber-700 {
+  background: #fff6e0; color: #92400e; border-color: #f3d98f;
+}
+span.rounded-full.border.border-slate-700 {
+  background: #f3f4f6; color: #4b5563; border-color: #e5e7eb;
+}
+span.rounded-full.border.border-red-500\/40 {
+  background: #fdeceb; color: #b91c1c; border-color: #f6b7b3;
+}
+
+/* Empty states */
+.rounded-xl.bg-slate-900\/60.p-10.text-center {
+  border: 2px dashed #ddd3fb;
+  background: linear-gradient(180deg, #fbfaff, #ffffff);
+  box-shadow: none;
+  padding: 3rem 1.5rem;
+}
+.rounded-xl.bg-slate-900\/60.p-10.text-center > svg {
+  width: 4.25rem;
+  height: 4.25rem;
+  padding: 1.1rem;
+  border-radius: 1.3rem;
+  color: #8b5cf6;
+  background: linear-gradient(135deg, #f1ebff, #fbe9ff);
+}
+.rounded-xl.bg-slate-900\/60.p-10.text-center h3 { font-size: 1.1rem; }
+
+/* Search / filter bars */
+.rounded-xl.bg-slate-950.p-4:has(input[placeholder*="earch"]),
+.rounded-xl.bg-slate-950.p-4:has(select) {
+  border-radius: 1.1rem;
+  padding: 0.85rem 1rem;
+  background: #ffffff;
+}
+.rounded-xl.bg-slate-950.p-4 input[placeholder*="earch"] { padding-left: 2.5rem; }
+
+/* Tables as tidy cards */
+div.overflow-x-auto { border-radius: 1.1rem; }
+table { border-collapse: separate; border-spacing: 0; width: 100%; }
+table thead th {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #7c6fa8;
+  background: #f7f5ff;
+  border-bottom: 1px solid #ece8fb;
+}
+table tbody td { border-top: 1px solid #f1eff9; }
+table tbody tr:first-child td { border-top: 0; }
+table tbody td:first-child { font-weight: 600; color: #111827; }
+
+/* =========================================================
+   FORMS – modal sheet look for every dialog
+   ========================================================= */
+div.fixed.inset-0 > div[class*="max-w-"] {
+  position: relative;
+  padding: 1.75rem 1.5rem 1.25rem;
+  border: 0;
+  border-radius: 1.4rem;
+  background: #ffffff;
+}
+div.fixed.inset-0 > div[class*="max-w-"]::before {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; top: 0;
+  height: 6px;
+  background: linear-gradient(90deg, #7c3aed, #d946ef 55%, #10b981);
+}
+div.fixed.inset-0 > div[class*="max-w-"] h3.text-lg {
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+/* Close "✕" button */
+div.fixed.inset-0 > div[class*="max-w-"] > div:first-child > button:last-child {
+  width: 2.25rem; height: 2.25rem;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 9999px;
+  background: #f3f4f6;
+  color: #6b7280;
+  transition: all 0.15s ease;
+}
+div.fixed.inset-0 > div[class*="max-w-"] > div:first-child > button:last-child:hover {
+  background: #ede9fe; color: #6d28d9; transform: rotate(90deg);
+}
+
+/* Fields */
+div.fixed.inset-0 label.block,
+div.fixed.inset-0 label.text-sm {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #6b7280;
+  margin-bottom: 0.4rem;
+}
+div.fixed.inset-0 input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+div.fixed.inset-0 select,
+div.fixed.inset-0 textarea {
+  min-height: 2.85rem;
+  border: 1.5px solid #e5e1f5;
+  border-radius: 0.85rem;
+  background-color: #faf9ff;
+  padding-left: 0.9rem;
+  padding-right: 0.9rem;
+  transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+}
+div.fixed.inset-0 textarea { padding-top: 0.7rem; line-height: 1.5; }
+div.fixed.inset-0 input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):focus,
+div.fixed.inset-0 select:focus,
+div.fixed.inset-0 textarea:focus {
+  background-color: #ffffff;
+  border-color: #7c3aed;
+}
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%237c3aed' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.85rem center;
+  padding-right: 2.4rem !important;
+}
+div.fixed.inset-0 input[type="checkbox"] { width: 1.15rem; height: 1.15rem; border-radius: 0.35rem; }
+div.fixed.inset-0 input[type="file"] {
+  border: 1.5px dashed #c4b5fd;
+  border-radius: 0.85rem;
+  background: #faf9ff;
+  padding: 0.7rem;
+}
+div.fixed.inset-0 .space-y-3 > * + * { margin-top: 1.1rem; }
+div.fixed.inset-0 .space-y-4 > * + * { margin-top: 1.2rem; }
+
+/* Action row pinned to the bottom of the sheet */
+div.fixed.inset-0 > div[class*="max-w-"] div.justify-end.gap-3,
+div.fixed.inset-0 > div[class*="max-w-"] div.justify-end.gap-2 {
+  position: sticky;
+  bottom: -1.25rem;
+  margin: 1.5rem -1.5rem -1.25rem;
+  padding: 1rem 1.5rem;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(8px);
+  border-top: 1px solid #f0edfa;
+  z-index: 2;
+}
+div.fixed.inset-0 > div[class*="max-w-"] button.border.border-slate-700 {
+  border-radius: 0.85rem;
+  background: #ffffff;
+  font-weight: 600;
+  padding: 0.65rem 1.2rem;
+}
+div.fixed.inset-0 > div[class*="max-w-"] button.bg-emerald-500 {
+  border-radius: 0.85rem;
+  padding: 0.65rem 1.4rem;
+}
+
+/* Inline (non-modal) forms and cards with inputs */
+form input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+form select {
+  border-radius: 0.8rem;
+}
