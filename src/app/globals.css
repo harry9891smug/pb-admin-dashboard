@@ -262,3 +262,61 @@ table th, table td { padding-top: 0.7rem; padding-bottom: 0.7rem; }
 
 /* Page titles */
 main h1 { letter-spacing: -0.02em; }
+
+/* ---------- Dark violet sidebar ---------- */
+.pb-sidebar {
+  background:
+    radial-gradient(420px 260px at 0% 0%, rgba(168, 85, 247, 0.35), transparent 65%),
+    radial-gradient(380px 300px at 100% 100%, rgba(16, 185, 129, 0.16), transparent 65%),
+    linear-gradient(180deg, #1a0f3c 0%, #23124f 55%, #170d36 100%);
+  display: flex;
+  flex-direction: column;
+}
+.pb-sidebar nav::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.16); }
+.pb-sidebar nav { scrollbar-color: rgba(255, 255, 255, 0.16) transparent; }
+@media (min-width: 1024px) {
+  .pb-sidebar { box-shadow: 8px 0 32px rgba(26, 15, 60, 0.12); }
+}
+
+/* ---------- Canvas & topbar ---------- */
+.pb-app-bg {
+  background:
+    radial-gradient(900px 480px at 85% -8%, rgba(139, 92, 246, 0.13), transparent 60%),
+    radial-gradient(700px 420px at 10% 105%, rgba(16, 185, 129, 0.10), transparent 60%),
+    #f5f4fb;
+}
+header.sticky {
+  background: rgba(245, 244, 251, 0.72) !important;
+  border-bottom-color: rgba(124, 58, 237, 0.08) !important;
+}
+
+/* Page header: title row gets a subtle accent underline */
+main h1.text-2xl { font-weight: 800; }
+main h1.text-2xl + p { color: #6b7280; }
+
+/* Stat tiles in older pages */
+.grid > .rounded-xl.bg-slate-900\/60.p-4 {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1rem;
+  padding: 1.1rem 1.25rem;
+}
+.grid > .rounded-xl.bg-slate-900\/60.p-4::after {
+  content: "";
+  position: absolute;
+  right: -28px;
+  top: -28px;
+  width: 90px;
+  height: 90px;
+  border-radius: 9999px;
+  background: radial-gradient(circle, rgba(124, 58, 237, 0.14), transparent 70%);
+  pointer-events: none;
+}
+.grid > .rounded-xl.bg-slate-900\/60.p-4 > p.text-2xl {
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+/* Status chips written as "border + tinted bg" read as proper pills */
+span.rounded-full.border { font-weight: 600; letter-spacing: 0.01em; }

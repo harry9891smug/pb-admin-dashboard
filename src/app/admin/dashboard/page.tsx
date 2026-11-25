@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { TrendingUp, Users, Tag, CreditCard, Calendar, Activity, AlertCircle } from "lucide-react";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { getAdminDashboardSummary, DashboardSummary } from "@/lib/api";
@@ -120,21 +121,45 @@ export default function DashboardPage() {
     <ProtectedRoute>
       <div className="mx-auto max-w-7xl space-y-6">
         {/* Hero */}
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-violet-600 via-violet-600 to-indigo-700 p-6 text-white shadow-lg shadow-violet-600/20 sm:p-8">
-          <div className="pointer-events-none absolute -right-12 -top-16 h-56 w-56 rounded-full bg-white/10" />
-          <div className="pointer-events-none absolute -bottom-20 right-24 h-48 w-48 rounded-full bg-emerald-400/20" />
-          <div className="pointer-events-none absolute right-40 top-6 h-16 w-16 rounded-2xl rotate-12 bg-white/10" />
-          <div className="relative flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="relative overflow-hidden rounded-[28px] bg-gradient-to-br from-[#1a0f3c] via-[#2d1565] to-[#4c1d95] p-6 text-white shadow-xl shadow-violet-900/25 sm:p-9">
+          <div className="pointer-events-none absolute -right-16 -top-24 h-72 w-72 rounded-full bg-fuchsia-500/30 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-28 left-1/3 h-64 w-64 rounded-full bg-emerald-400/20 blur-3xl" />
+          <div className="pointer-events-none absolute right-10 top-8 h-24 w-24 rotate-12 rounded-3xl border border-white/15 bg-white/5 backdrop-blur" />
+          <div className="pointer-events-none absolute bottom-6 right-40 h-12 w-12 -rotate-6 rounded-2xl border border-white/15 bg-white/5" />
+          <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Dashboard overview</h1>
-              <p className="mt-1.5 max-w-xl text-sm text-violet-100">
-                Welcome back! Here is what is happening across your businesses today.
+              <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-medium text-violet-100 backdrop-blur">
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
+                Live overview
+              </span>
+              <h1 className="mt-3 text-3xl font-extrabold tracking-tight sm:text-4xl">
+                Welcome back <span className="bg-gradient-to-r from-violet-200 to-emerald-200 bg-clip-text text-transparent">👋</span>
+              </h1>
+              <p className="mt-2 max-w-xl text-sm text-violet-200/90">
+                Here is what is happening across your businesses today.
               </p>
             </div>
-            <div className="inline-flex items-center gap-2 self-start rounded-xl bg-white/15 px-4 py-2 text-sm font-medium backdrop-blur lg:self-auto">
-              <Calendar className="h-4 w-4" />
+            <div className="inline-flex items-center gap-2 self-start rounded-2xl border border-white/15 bg-white/10 px-4 py-2.5 text-sm font-medium backdrop-blur lg:self-auto">
+              <Calendar className="h-4 w-4 text-violet-200" />
               {today}
             </div>
+          </div>
+          <div className="relative mt-6 flex flex-wrap gap-2">
+            {[
+              { href: "/admin/businesses", label: "Businesses" },
+              { href: "/admin/offers", label: "Offers" },
+              { href: "/admin/invoices", label: "Invoices" },
+              { href: "/admin/videos", label: "Welcome Videos" },
+              { href: "/admin/test-accounts", label: "Test Accounts" },
+            ].map((q) => (
+              <Link
+                key={q.href}
+                href={q.href}
+                className="rounded-full border border-white/15 bg-white/10 px-4 py-1.5 text-xs font-semibold text-white backdrop-blur transition hover:bg-white/20"
+              >
+                {q.label} →
+              </Link>
+            ))}
           </div>
         </div>
 

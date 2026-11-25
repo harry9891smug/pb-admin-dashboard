@@ -36,7 +36,7 @@ export default function Sidebar({ mobileOpen = false, onClose }: SidebarProps) {
   return (
     <>
       {/* Desktop: fixed beside the page */}
-      <aside className="hidden lg:flex lg:flex-col sticky top-0 h-screen w-72 shrink-0 border-r border-gray-200/80 bg-white">
+      <aside className="hidden lg:flex lg:flex-col sticky top-0 h-screen w-72 shrink-0 pb-sidebar">
         <SidebarBody />
       </aside>
 
@@ -51,14 +51,14 @@ export default function Sidebar({ mobileOpen = false, onClose }: SidebarProps) {
         <div className="absolute inset-0 bg-gray-900/40 backdrop-blur-[2px]" onClick={onClose} />
         <aside
           className={cn(
-            "absolute left-0 top-0 flex h-full w-[84%] max-w-xs flex-col bg-white shadow-2xl transition-transform duration-200",
+            "absolute left-0 top-0 flex h-full w-[84%] max-w-xs flex-col pb-sidebar shadow-2xl transition-transform duration-200",
             mobileOpen ? "translate-x-0" : "-translate-x-full"
           )}
         >
           <button
             onClick={onClose}
             aria-label="Close menu"
-            className="absolute right-3 top-4 z-10 rounded-lg p-2 text-gray-500 hover:bg-gray-100"
+            className="absolute right-3 top-4 z-10 rounded-lg p-2 text-white/70 hover:bg-white/10"
           >
             <X className="h-5 w-5" />
           </button>
@@ -114,13 +114,13 @@ function SidebarBody() {
   return (
     <>
       {/* Brand */}
-      <div className="flex h-16 shrink-0 items-center gap-3 border-b border-gray-100 px-5">
-        <img src="/logo.png" alt="PromoBandhu" className="h-10 w-auto shrink-0 object-contain" />
+      <div className="flex h-[72px] shrink-0 items-center gap-3 px-5">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white shadow-lg shadow-black/30">
+          <img src="/logo.png" alt="PromoBandhu" className="h-8 w-8 object-contain" />
+        </div>
         <div className="leading-tight">
-          <div className="text-[15px] font-bold text-gray-900">
-            PromoBandhu <span className="text-violet-600">Admin</span>
-          </div>
-          <div className="text-[11px] text-gray-400">Internal dashboard</div>
+          <div className="text-[15px] font-bold tracking-tight text-white">PromoBandhu</div>
+          <div className="text-[11px] font-medium uppercase tracking-widest text-violet-300">Admin Console</div>
         </div>
       </div>
 
@@ -143,19 +143,19 @@ function SidebarBody() {
                 <button
                   type="button"
                   onClick={() => toggle(section.key)}
-                  className="group flex w-full items-center justify-between rounded-lg px-3 py-2 text-left transition-colors hover:bg-gray-50"
+                  className="group flex w-full items-center justify-between rounded-lg px-3 py-2 text-left transition-colors hover:bg-white/5"
                 >
                   <span
                     className={cn(
-                      "text-[11px] font-bold uppercase tracking-wider",
-                      hasActive ? "text-violet-600" : "text-gray-400 group-hover:text-gray-500"
+                      "text-[11px] font-bold uppercase tracking-[0.14em]",
+                      hasActive ? "text-violet-300" : "text-white/35 group-hover:text-white/60"
                     )}
                   >
                     {section.title}
                   </span>
                   <ChevronDown
                     className={cn(
-                      "h-4 w-4 text-gray-400 transition-transform duration-200",
+                      "h-4 w-4 text-white/35 transition-transform duration-200",
                       open ? "rotate-180" : "rotate-0"
                     )}
                   />
@@ -181,14 +181,14 @@ function SidebarBody() {
       </nav>
 
       {/* Signed-in user */}
-      <div className="shrink-0 border-t border-gray-100 p-3">
-        <div className="flex items-center gap-3 rounded-2xl bg-gray-50 p-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-violet-100 text-sm font-bold uppercase text-violet-700">
+      <div className="shrink-0 p-3">
+        <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-400 to-fuchsia-500 text-sm font-bold uppercase text-white shadow-lg shadow-violet-900/40">
             {name.charAt(0)}
           </div>
           <div className="min-w-0 leading-tight">
-            <div className="truncate text-sm font-semibold capitalize text-gray-900">{name}</div>
-            <div className="truncate text-[11px] text-gray-400">{user?.email ?? "Administrator"}</div>
+            <div className="truncate text-sm font-semibold capitalize text-white">{name}</div>
+            <div className="truncate text-[11px] text-white/45">{user?.email ?? "Administrator"}</div>
           </div>
         </div>
       </div>
@@ -213,19 +213,19 @@ function SidebarLink({
       className={cn(
         "group relative flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-all",
         active
-          ? "bg-violet-50 text-violet-700"
-          : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+          ? "bg-gradient-to-r from-violet-500/30 to-fuchsia-500/10 text-white ring-1 ring-inset ring-white/10"
+          : "text-white/65 hover:bg-white/5 hover:text-white"
       )}
     >
       {active && (
-        <span className="absolute left-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-r bg-violet-500" />
+        <span className="absolute -left-3 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r bg-gradient-to-b from-violet-300 to-fuchsia-400" />
       )}
       <span
         className={cn(
-          "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors",
+          "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-all",
           active
-            ? "bg-violet-500 text-white shadow-sm shadow-violet-500/30"
-            : "bg-gray-100 text-gray-500 group-hover:bg-white group-hover:text-violet-600"
+            ? "bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white shadow-lg shadow-violet-900/50"
+            : "bg-white/5 text-white/60 group-hover:bg-white/10 group-hover:text-white"
         )}
       >
         <Icon className="h-4 w-4" />
