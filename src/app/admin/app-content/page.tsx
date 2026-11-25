@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { Pencil, Trash2, Play, Upload, Clapperboard, Plus, X } from "lucide-react";
@@ -78,10 +79,12 @@ function Modal({
   children: React.ReactNode;
   footer: React.ReactNode;
 }) {
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="max-h-[92vh] w-full max-w-xl overflow-y-auto rounded-2xl bg-white shadow-2xl">
-        <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
+  // Rendered straight into <body>: inside the page card, "fixed" is measured
+  // from the card (it has a transform/filter), which cut the popup off.
+  return createPortal(
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4">
+      <div className="flex max-h-[90vh] w-full max-w-xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
+        <div className="flex flex-none items-center justify-between border-b border-gray-100 px-6 py-4">
           <div>
             <div className="text-base font-bold text-gray-900">{title}</div>
             {subtitle ? <div className="mt-0.5 text-xs text-gray-500">{subtitle}</div> : null}
@@ -90,10 +93,15 @@ function Modal({
             <X className="h-5 w-5" />
           </button>
         </div>
-        <div className="grid grid-cols-1 gap-4 px-6 py-5 md:grid-cols-2">{children}</div>
-        <div className="flex items-center justify-end gap-2 border-t border-gray-100 px-6 py-4">{footer}</div>
+        <div className="grid min-h-0 flex-1 grid-cols-1 content-start gap-4 overflow-y-auto px-6 py-5 md:grid-cols-2">
+          {children}
+        </div>
+        <div className="flex flex-none items-center justify-end gap-2 border-t border-gray-100 bg-white px-6 py-4">
+          {footer}
+        </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
@@ -680,53 +688,109 @@ export default function AppContentPage() {
                 className={inputCls}
               />
             </div>
+            {/* One choice: paste a link, or upload a file. */}
             <div className="md:col-span-2">
-              <label className={labelCls}>Video * (paste a URL, or upload MP4 / MOV / WebM under 50 MB)</label>
-              <div className="mt-1.5 flex gap-2">
-                <input
-                  value={vForm.videoUrl}
-                  onChange={(e) => setVForm((p) => ({ ...p, videoUrl: e.target.value, source: "url" }))}
-                  placeholder="https://youtube.com/watch?v=... or a video link"
-                  className="w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 outline-none transition focus:border-violet-500 focus:ring-2 focus:ring-violet-200"
-                />
-                <label
-                  className={`inline-flex cursor-pointer items-center gap-2 whitespace-nowrap rounded-xl border border-violet-200 bg-violet-50 px-4 py-2.5 text-sm font-semibold text-violet-700 transition hover:bg-violet-100 ${
-                    uploading ? "pointer-events-none opacity-50" : ""
-                  }`}
-                >
-                  <Upload className="h-4 w-4" />
-                  {uploading ? "Uploading..." : "Upload"}
-                  <input
-                    type="file"
-                    accept="video/mp4,video/quicktime,video/webm"
-                    className="hidden"
-                    onChange={(e) => {
-                      onPickFile(e.target.files?.[0]);
-                      e.target.value = "";
-                    }}
-                  />
-                </label>
+              <label className={labelCls}>Video *</label>
+              <div className="mt-1.5 grid grid-cols-2 gap-1 rounded-xl bg-gray-100 p-1">
+                {(
+                  [
+                    { id: "url", label: "Paste a link" },
+                    { id: "upload", label: "Upload a file" },
+                  ] as const
+                ).map((m) => (
+                  <button
+                    key={m.id}
+                    type="button"
+                    onClick={() =>
+                      setVForm((p) =>
+                        p.source === m.id ? p : { ...p, source: m.id, videoUrl: "" }
+                      )
+                    }
+                    className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${
+                      vForm.source === m.id ? "bg-white text-violet-700 shadow-sm" : "text-gray-600 hover:text-gray-900"
+                    }`}
+                  >
+                    {m.label}
+                  </button>
+                ))}
               </div>
+
+              {vForm.source === "url" ? (
+                <div className="mt-3">
+                  <input
+                    value={vForm.videoUrl}
+                    onChange={(e) => setVForm((p) => ({ ...p, videoUrl: e.target.value }))}
+                    placeholder="https://www.youtube.com/watch?v=..."
+                    className="w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 outline-none transition focus:border-violet-500 focus:ring-2 focus:ring-violet-200"
+                  />
+                  <p className="mt-1.5 text-xs text-gray-500">YouTube link or any link that plays a video.</p>
+                </div>
+              ) : (
+                <div className="mt-3">
+                  <label
+                    className={`flex cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed px-4 py-6 text-center transition ${
+                      vForm.videoUrl && vForm.source === "upload"
+                        ? "border-emerald-300 bg-emerald-50"
+                        : "border-violet-200 bg-violet-50/50 hover:bg-violet-50"
+                    } ${uploading ? "pointer-events-none opacity-60" : ""}`}
+                  >
+                    <Upload className="h-6 w-6 text-violet-600" />
+                    <span className="text-sm font-semibold text-gray-900">
+                      {uploading
+                        ? "Uploading..."
+                        : vForm.videoUrl && vForm.source === "upload"
+                        ? "Uploaded. Click to replace"
+                        : "Click to choose a video"}
+                    </span>
+                    <span className="text-xs text-gray-500">MP4, MOV or WebM, under 50 MB</span>
+                    <input
+                      type="file"
+                      accept="video/mp4,video/quicktime,video/webm"
+                      className="hidden"
+                      onChange={(e) => {
+                        onPickFile(e.target.files?.[0]);
+                        e.target.value = "";
+                      }}
+                    />
+                  </label>
+                  {vForm.videoUrl && vForm.source === "upload" ? (
+                    <a
+                      href={vForm.videoUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-2 block truncate text-xs text-violet-600 hover:underline"
+                    >
+                      {vForm.videoUrl}
+                    </a>
+                  ) : null}
+                </div>
+              )}
             </div>
-            <div>
-              <label className={labelCls}>Order (for a series later)</label>
-              <input
-                value={vForm.sortOrder}
-                onChange={(e) => setVForm((p) => ({ ...p, sortOrder: e.target.value }))}
-                className={inputCls}
-              />
-            </div>
-            <div>
+
+            <div className="md:col-span-2">
               <label className={labelCls}>Status</label>
               <select
                 value={vForm.isActive ? "1" : "0"}
                 onChange={(e) => setVForm((p) => ({ ...p, isActive: e.target.value === "1" }))}
                 className={inputCls}
               >
-                <option value="1">Active</option>
-                <option value="0">Inactive</option>
+                <option value="1">Active (customers can see it)</option>
+                <option value="0">Inactive (hidden)</option>
               </select>
             </div>
+
+            {/* The order only matters once an add-on has a series of videos. */}
+            <details className="md:col-span-2">
+              <summary className="cursor-pointer text-xs font-semibold text-gray-500">More options</summary>
+              <div className="mt-2">
+                <label className={labelCls}>Order (for a series later)</label>
+                <input
+                  value={vForm.sortOrder}
+                  onChange={(e) => setVForm((p) => ({ ...p, sortOrder: e.target.value }))}
+                  className={inputCls}
+                />
+              </div>
+            </details>
           </Modal>
         ) : null}
 
