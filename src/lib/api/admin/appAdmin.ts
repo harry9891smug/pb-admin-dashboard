@@ -10,7 +10,8 @@ export interface PricingTier {
   name: string;
   quantity: number | null;
   durationDays: number | null;
-  price: string | number;
+  price: string | number; // selling price (what is charged)
+  mrp?: string | number | null; // display-only
   paymentType: PaymentType;
   isActive: boolean;
 }
@@ -21,6 +22,7 @@ export type PricingTierPayload = {
   quantity?: number | null;
   durationDays?: number | null;
   price: number;
+  mrp?: number | null;
   paymentType: PaymentType;
   isActive?: boolean;
 };

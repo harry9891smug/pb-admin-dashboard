@@ -687,6 +687,8 @@ export const createPlan = async (payload: any) => {
         : undefined,
 
       amount: requiredNumber(payload?.amount ?? payload?.price, "amount"),
+      // MRP is display-only; null/empty = no offer
+      mrp: payload?.mrp === null || payload?.mrp === undefined || payload?.mrp === "" ? null : toNumber(payload.mrp, 0),
 
       discountAmount: toNumber(payload?.discountAmount, 0),
       smsLimit: toNumber(payload?.smsLimit, 0),
@@ -740,6 +742,10 @@ export const updatePlan = async (id: number, payload: any) => {
     // IMPORTANT: amount only send if provided AND valid number (never null)
     if (payload?.amount !== undefined || payload?.price !== undefined) {
       body.amount = requiredNumber(payload?.amount ?? payload?.price, "amount");
+    }
+
+    if (payload?.mrp !== undefined) {
+      body.mrp = payload.mrp === null || payload.mrp === "" ? null : toNumber(payload.mrp, 0);
     }
 
     if (payload?.discountAmount !== undefined) body.discountAmount = toNumber(payload.discountAmount, 0);

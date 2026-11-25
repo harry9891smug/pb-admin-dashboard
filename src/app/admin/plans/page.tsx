@@ -29,7 +29,8 @@ type PlanForm = {
   billingType: BillingType;
   billingCycle: BillingCycle;
 
-  amount: string; // input string (convert to number on submit)
+  amount: string; // selling price — input string (convert to number on submit)
+  mrp: string; // display-only list price, optional
   discountAmount: string;
 
   smsLimit: string;
@@ -52,6 +53,7 @@ const emptyForm: PlanForm = {
   billingCycle: "monthly",
 
   amount: "",
+  mrp: "",
   discountAmount: "0",
 
   smsLimit: "0",
@@ -181,6 +183,7 @@ export default function PlansPage() {
       billingCycle: (plan?.billingCycle as BillingCycle) ?? "monthly",
 
       amount: plan?.amount != null ? String(plan.amount) : "",
+      mrp: plan?.mrp != null && plan.mrp !== "" ? String(Number(plan.mrp)) : "",
       discountAmount: plan?.discountAmount != null ? String(plan.discountAmount) : "0",
 
       smsLimit: plan?.smsLimit != null ? String(plan.smsLimit) : "0",
@@ -213,6 +216,11 @@ export default function PlansPage() {
     if (toNumber(form.smsLimit, -1) < 0) return "SMS limit invalid";
     if (toNumber(form.offerLimit, -1) < 0) return "Offer limit invalid";
     if (toNumber(form.discountAmount, -1) < 0) return "Discount invalid";
+    if (form.mrp.trim() !== "") {
+      const mrp = toNumber(form.mrp, -1);
+      if (mrp < 0) return "MRP invalid";
+      if (mrp < toNumber(form.amount, 0)) return "MRP cannot be lower than the selling price";
+    }
     return null;
   };
 
@@ -225,7 +233,8 @@ export default function PlansPage() {
       billingType: form.billingType, // ✅ one_time | recurring
       billingCycle: form.billingType === "recurring" ? form.billingCycle : null,
 
-      amount: toNumber(form.amount, 0), // ✅ number
+      amount: toNumber(form.amount, 0), // ✅ number (selling price)
+      mrp: form.mrp.trim() === "" ? null : toNumber(form.mrp, 0),
       discountAmount: toNumber(form.discountAmount, 0),
 
       smsLimit: toNumber(form.smsLimit, 0),
@@ -428,6 +437,14 @@ export default function PlansPage() {
                   <div className="text-sm text-slate-300 flex flex-wrap gap-3">
                     <span>
                       ₹ <b>{plan.amount}</b>
+                      {Number(plan.mrp) > Number(plan.amount) && (
+                        <>
+                          <span className="ml-1.5 text-slate-400 line-through">₹{plan.mrp}</span>
+                          <span className="ml-1.5 rounded-full bg-green-600 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                            {Math.round(((Number(plan.mrp) - Number(plan.amount)) / Number(plan.mrp)) * 100)}% OFF
+                          </span>
+                        </>
+                      )}
                     </span>
                     <span>
                       SMS <b>{plan.smsLimit}</b>
@@ -520,10 +537,17 @@ export default function PlansPage() {
                 />
 
                 <Field
-                  label="Amount (₹) *"
+                  label="Selling price (₹) * — charged via Razorpay"
                   type="number"
                   value={form.amount}
                   onChange={(v) => setForm((p) => ({ ...p, amount: v }))}
+                />
+
+                <Field
+                  label="MRP (₹) — optional, display only"
+                  type="number"
+                  value={form.mrp}
+                  onChange={(v) => setForm((p) => ({ ...p, mrp: v }))}
                 />
 
                 <Field

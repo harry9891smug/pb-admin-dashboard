@@ -27,6 +27,7 @@ type Form = {
   quantity: string;
   durationDays: string;
   price: string;
+  mrp: string;
   paymentType: PaymentType;
   isActive: boolean;
 };
@@ -37,6 +38,7 @@ const empty: Form = {
   quantity: "",
   durationDays: "30",
   price: "",
+  mrp: "",
   paymentType: "SUBSCRIPTION",
   isActive: true,
 };
@@ -95,6 +97,7 @@ export default function PricingTiersPage() {
       quantity: t.quantity != null ? String(t.quantity) : "",
       durationDays: t.durationDays != null ? String(t.durationDays) : "",
       price: String(Number(t.price)),
+      mrp: t.mrp != null && t.mrp !== "" ? String(Number(t.mrp)) : "",
       paymentType: t.paymentType,
       isActive: t.isActive,
     });
@@ -104,7 +107,10 @@ export default function PricingTiersPage() {
   const save = async () => {
     if (!form.name.trim()) return toast.error("Name is required");
     const price = Number(form.price);
-    if (form.price === "" || Number.isNaN(price) || price < 0) return toast.error("Enter a valid price");
+    if (form.price === "" || Number.isNaN(price) || price < 0) return toast.error("Enter a valid selling price");
+    const mrp = form.mrp.trim() === "" ? null : Number(form.mrp);
+    if (mrp !== null && (Number.isNaN(mrp) || mrp < 0)) return toast.error("Enter a valid MRP");
+    if (mrp !== null && mrp < price) return toast.error("MRP cannot be lower than the selling price");
 
     const payload = {
       featureCode: form.featureCode.trim(),
@@ -112,6 +118,7 @@ export default function PricingTiersPage() {
       quantity: form.quantity ? Number(form.quantity) : null,
       durationDays: form.durationDays ? Number(form.durationDays) : null,
       price,
+      mrp,
       paymentType: form.paymentType,
       isActive: form.isActive,
     };
@@ -228,7 +235,17 @@ export default function PricingTiersPage() {
                         </span>
                       </div>
 
-                      <p className="mt-4 text-3xl font-extrabold tracking-tight text-gray-900">{inr(t.price)}</p>
+                      <div className="mt-4 flex flex-wrap items-baseline gap-2">
+                        <p className="text-3xl font-extrabold tracking-tight text-gray-900">{inr(t.price)}</p>
+                        {Number(t.mrp) > Number(t.price) && (
+                          <>
+                            <span className="text-sm font-medium text-gray-400 line-through">{inr(t.mrp as number)}</span>
+                            <span className="rounded-full bg-green-600 px-2 py-0.5 text-[11px] font-bold text-white">
+                              {Math.round(((Number(t.mrp) - Number(t.price)) / Number(t.mrp)) * 100)}% OFF
+                            </span>
+                          </>
+                        )}
+                      </div>
 
                       <div className="mt-3 flex flex-wrap gap-2 text-xs text-gray-600">
                         {t.quantity != null && (
@@ -304,7 +321,7 @@ export default function PricingTiersPage() {
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className={labelCls}>Price (₹)</label>
+                    <label className={labelCls}>Selling price (₹)</label>
                     <input
                       type="number"
                       min={0}
@@ -312,6 +329,23 @@ export default function PricingTiersPage() {
                       onChange={(e) => setForm({ ...form, price: e.target.value })}
                       className={inputCls}
                     />
+                  </div>
+                  <div>
+                    <label className={labelCls}>MRP (₹) — optional</label>
+                    <input
+                      type="number"
+                      min={0}
+                      value={form.mrp}
+                      onChange={(e) => setForm({ ...form, mrp: e.target.value })}
+                      placeholder="Display only"
+                      className={inputCls}
+                    />
+                    {Number(form.mrp) > Number(form.price) && form.price !== "" && (
+                      <p className="mt-1 text-[11px] font-semibold text-green-700">
+                        {Math.round(((Number(form.mrp) - Number(form.price)) / Number(form.mrp)) * 100)}% OFF — customers
+                        save ₹{(Number(form.mrp) - Number(form.price)).toLocaleString("en-IN")}
+                      </p>
+                    )}
                   </div>
                   <div>
                     <label className={labelCls}>Payment type</label>
