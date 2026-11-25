@@ -65,6 +65,7 @@ export const navSections: NavSection[] = [
       { href: "/admin/pricing-tiers", label: "Add-on Pricing", icon: Coins, permission: "subscription.view", keywords: ["team licence", "sms credit", "tiers", "addon", "price"] },
       { href: "/admin/advertisements", label: "Advertisements", icon: Megaphone, permission: "offer.view", keywords: ["ads"] },
       { href: "/admin/videos", label: "Welcome Videos", icon: Clapperboard, permission: "business.view", keywords: ["video", "announcement", "welcome", "onboarding"] },
+      { href: "/admin/app-content", label: "Add-on Videos", icon: Clapperboard, permission: "business.view", keywords: ["video", "addon", "tutorial", "language", "hindi", "marathi", "english"] },
       { href: "/admin/categories", label: "Categories", icon: Tags, permission: "business.view" },
       { href: "/admin/referrals", label: "Referral Codes", icon: Gift, permission: "business.view", keywords: ["influencer", "associate", "sales", "free sms", "invite"] },
       { href: "/admin/business-email", label: "Business Email", icon: Mail, permission: "business.view", keywords: ["email", "mailbox", "claim", "early access"] },
