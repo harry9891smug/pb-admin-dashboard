@@ -264,6 +264,88 @@ table th, table td { padding-top: 0.7rem; padding-bottom: 0.7rem; }
 main h1 { letter-spacing: -0.02em; }
 
 /* =========================================================
+   LOGIN – aurora background, floating glass cards
+   ========================================================= */
+@keyframes pb-drift {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  50%  { transform: translate3d(40px, -30px, 0) scale(1.12); }
+  100% { transform: translate3d(0, 0, 0) scale(1); }
+}
+@keyframes pb-drift-rev {
+  0%   { transform: translate3d(0, 0, 0) scale(1.08); }
+  50%  { transform: translate3d(-50px, 36px, 0) scale(0.95); }
+  100% { transform: translate3d(0, 0, 0) scale(1.08); }
+}
+@keyframes pb-bob {
+  0%, 100% { transform: translateY(0) rotate(var(--r, 0deg)); }
+  50%      { transform: translateY(-14px) rotate(var(--r, 0deg)); }
+}
+@keyframes pb-shine {
+  0%   { transform: translateX(-120%) skewX(-18deg); }
+  60%, 100% { transform: translateX(260%) skewX(-18deg); }
+}
+@keyframes pb-rise {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.pb-login-bg {
+  background:
+    radial-gradient(1100px 600px at 80% -10%, rgba(168, 85, 247, 0.35), transparent 60%),
+    radial-gradient(900px 600px at 0% 110%, rgba(16, 185, 129, 0.22), transparent 60%),
+    #0f0827;
+}
+.pb-login-grid {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 56px 56px;
+  -webkit-mask-image: radial-gradient(ellipse at center, #000 30%, transparent 75%);
+  mask-image: radial-gradient(ellipse at center, #000 30%, transparent 75%);
+}
+.pb-orb-a { animation: pb-drift 14s ease-in-out infinite; }
+.pb-orb-b { animation: pb-drift-rev 18s ease-in-out infinite; }
+.pb-bob   { animation: pb-bob 6s ease-in-out infinite; }
+.pb-bob-2 { animation: pb-bob 7.5s ease-in-out infinite reverse; }
+.pb-rise  { animation: pb-rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) backwards; }
+.pb-shine::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+  animation: pb-shine 3.2s ease-in-out infinite;
+}
+.pb-glass {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.05));
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+.pb-login-input {
+  width: 100%;
+  border-radius: 0.95rem;
+  border: 1.5px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.07);
+  padding: 0.85rem 1rem 0.85rem 2.9rem;
+  font-size: 0.92rem;
+  color: #f5f3ff !important;
+  outline: none;
+  transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+.pb-login-input::placeholder { color: rgba(221, 214, 254, 0.45); }
+.pb-login-input:focus {
+  border-color: #a78bfa !important;
+  background: rgba(255, 255, 255, 0.11);
+  box-shadow: 0 0 0 4px rgba(167, 139, 250, 0.22) !important;
+}
+/* stop the browser's autofill from turning the field white */
+.pb-login-input:-webkit-autofill {
+  -webkit-text-fill-color: #f5f3ff;
+  transition: background-color 9999s ease-in-out 0s;
+  box-shadow: 0 0 0 1000px #20123f inset !important;
+}
+
+/* =========================================================
    PAGE SHELL – fixed top card + independently scrolling list card
    ========================================================= */
 /* A page that uses the shell owns its scrolling, so the outer area stays put. */
