@@ -9,6 +9,7 @@ import { Pencil, Trash2, Play, Upload, Clapperboard, Plus, X } from "lucide-reac
 import { isAuthenticated } from "@/lib/api";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import PageShell from "@/components/ui/PageShell";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import {
   listLanguages,
   createLanguage,
@@ -158,6 +159,16 @@ export default function AppContentPage() {
       return false;
     }
   };
+
+  // One confirm popup for every delete on this page (the dashboard's own
+  // ConfirmDialog, not the browser's).
+  const [pendingDelete, setPendingDelete] = useState<{
+    title: string;
+    message: string;
+    confirmLabel: string;
+    action: () => void;
+  } | null>(null);
+  const askDelete = (d: NonNullable<typeof pendingDelete>) => setPendingDelete(d);
 
   // ------------------------------------------------------------ video modal
   type VForm = {
@@ -470,10 +481,14 @@ export default function AppContentPage() {
                               <Pencil className="h-3.5 w-3.5" /> Edit
                             </button>
                             <button
-                              onClick={() => {
-                                if (confirm(`Delete this ${v.languageName ?? v.languageCode} video?`))
-                                  run(() => deleteAddonVideo(v.id), "Deleted");
-                              }}
+                              onClick={() =>
+                                askDelete({
+                                  title: "Delete this video?",
+                                  message: `The ${v.languageName ?? v.languageCode} video of ${a.name} will be removed from the app.`,
+                                  confirmLabel: "Delete",
+                                  action: () => run(() => deleteAddonVideo(v.id), "Deleted"),
+                                })
+                              }
                               className={btnDanger}
                             >
                               <Trash2 className="h-3.5 w-3.5" /> Delete
@@ -523,10 +538,17 @@ export default function AppContentPage() {
                       <Pencil className="h-3.5 w-3.5" /> Edit
                     </button>
                     <button
-                      onClick={() => {
-                        if (confirm(`Delete "${a.name}"? Its ${a.videoCount} video(s) are deleted too.`))
-                          run(() => deleteAddon(a.id), "Deleted");
-                      }}
+                      onClick={() =>
+                        askDelete({
+                          title: `Delete "${a.name}"?`,
+                          message:
+                            a.videoCount > 0
+                              ? `Its ${a.videoCount} video${a.videoCount === 1 ? "" : "s"} will be deleted too. This cannot be undone.`
+                              : "This cannot be undone.",
+                          confirmLabel: "Delete",
+                          action: () => run(() => deleteAddon(a.id), "Deleted"),
+                        })
+                      }
                       className={btnDanger}
                     >
                       <Trash2 className="h-3.5 w-3.5" /> Delete
@@ -569,9 +591,17 @@ export default function AppContentPage() {
                       <Pencil className="h-3.5 w-3.5" /> Edit
                     </button>
                     <button
-                      onClick={() => {
-                        if (confirm(`Delete language "${l.name}"?`)) run(() => deleteLanguage(l.code), "Deleted");
-                      }}
+                      onClick={() =>
+                        askDelete({
+                          title: `Delete ${l.name}?`,
+                          message:
+                            l.videoCount > 0
+                              ? "This language still has videos, so it cannot be deleted. Mark it inactive instead."
+                              : "This cannot be undone.",
+                          confirmLabel: "Delete",
+                          action: () => run(() => deleteLanguage(l.code), "Deleted"),
+                        })
+                      }
                       className={btnDanger}
                     >
                       <Trash2 className="h-3.5 w-3.5" /> Delete
@@ -613,10 +643,14 @@ export default function AppContentPage() {
                     </button>
                     {saved ? (
                       <button
-                        onClick={() => {
-                          if (confirm(`Remove the ${l.name} tutorial link?`))
-                            run(() => deleteTutorialLink(l.code), "Removed");
-                        }}
+                        onClick={() =>
+                          askDelete({
+                            title: `Remove the ${l.name} link?`,
+                            message: "Customers in this language will see the English link instead.",
+                            confirmLabel: "Remove",
+                            action: () => run(() => deleteTutorialLink(l.code), "Removed"),
+                          })
+                        }
                         className={btnDanger}
                       >
                         <Trash2 className="h-3.5 w-3.5" /> Remove
@@ -893,6 +927,21 @@ export default function AppContentPage() {
             </div>
           </Modal>
         ) : null}
+
+        <ConfirmDialog
+          open={!!pendingDelete}
+          tone="danger"
+          title={pendingDelete?.title ?? ""}
+          message={pendingDelete?.message}
+          confirmLabel={pendingDelete?.confirmLabel ?? "Delete"}
+          cancelLabel="Cancel"
+          onConfirm={() => {
+            const d = pendingDelete;
+            setPendingDelete(null);
+            d?.action();
+          }}
+          onCancel={() => setPendingDelete(null)}
+        />
 
         {/* ------------------------------------------------------- Preview */}
         {previewUrl ? (
