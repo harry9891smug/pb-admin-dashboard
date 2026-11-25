@@ -1,6 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { usePathname } from "next/navigation";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { LogOut, Menu } from "lucide-react";
 import { useAuth } from '@/contexts/AuthContext';
 import { allNavItems } from "@/lib/navigation";
@@ -24,10 +26,11 @@ export default function Topbar({ onMenu }: { onMenu?: () => void }) {
     return title;
   }
 
+  const [confirmOpen, setConfirmOpen] = useState(false);
+
   function handleLogout() {
-    if (confirm("Are you sure you want to logout?")) {
-      logout();
-    }
+    setConfirmOpen(false);
+    logout();
   }
 
   const name = user ? user.email?.split("@")[0] || "Admin" : "";
@@ -63,13 +66,24 @@ export default function Topbar({ onMenu }: { onMenu?: () => void }) {
           </div>
         )}
         <button
-          onClick={handleLogout}
+          onClick={() => setConfirmOpen(true)}
           className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700 shadow-sm transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
         >
           <LogOut className="h-4 w-4" />
           <span className="hidden sm:inline">Logout</span>
         </button>
       </div>
+
+      <ConfirmDialog
+        open={confirmOpen}
+        tone="logout"
+        title="Log out?"
+        message="You will need to sign in again to continue."
+        confirmLabel="Log out"
+        cancelLabel="Stay"
+        onConfirm={handleLogout}
+        onCancel={() => setConfirmOpen(false)}
+      />
     </header>
   );
 }

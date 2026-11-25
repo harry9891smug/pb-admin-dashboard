@@ -89,7 +89,11 @@ function LoginContent() {
       <div className="pointer-events-none absolute inset-0">
         <div className="pb-orb-a absolute -left-32 top-10 h-[420px] w-[420px] rounded-full bg-fuchsia-600/30 blur-[110px]" />
         <div className="pb-orb-b absolute -right-24 bottom-0 h-[460px] w-[460px] rounded-full bg-violet-600/35 blur-[120px]" />
-        <div className="pb-orb-a absolute left-1/3 top-1/2 h-72 w-72 rounded-full bg-emerald-500/20 blur-[100px]" />
+        {/* inline colour on purpose: globals.css remaps the bg-emerald-500/20 class to a pale solid */}
+        <div
+          className="pb-orb-a absolute left-[8%] top-[58%] h-72 w-72 rounded-full blur-[110px]"
+          style={{ background: "rgba(16, 185, 129, 0.16)" }}
+        />
         <div className="pb-login-grid absolute inset-0" />
       </div>
 
@@ -141,7 +145,7 @@ function LoginContent() {
             <div className="pb-glass pb-bob absolute left-0 top-2 w-52 rounded-2xl p-4" style={{ ["--r" as any]: "-3deg" }}>
               <div className="flex items-center justify-between text-[11px] font-medium text-violet-200">
                 <span>Revenue</span>
-                <TrendingUp className="h-4 w-4 text-emerald-300" />
+                <TrendingUp className="h-4 w-4 text-[#6ee7b7]" />
               </div>
               <div className="mt-1 text-2xl font-extrabold text-white">₹4.2L</div>
               <svg viewBox="0 0 120 32" className="mt-1 h-8 w-full">
@@ -168,7 +172,7 @@ function LoginContent() {
               </div>
               <div className="mt-1 flex items-end gap-2">
                 <span className="text-2xl font-extrabold text-white">128</span>
-                <span className="mb-1 rounded-full bg-emerald-400/20 px-2 py-0.5 text-[10px] font-bold text-emerald-300">
+                <span className="mb-1 rounded-full bg-emerald-400/20 px-2 py-0.5 text-[10px] font-bold text-[#6ee7b7]">
                   +12%
                 </span>
               </div>
@@ -199,7 +203,7 @@ function LoginContent() {
             >
               <div>
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] font-semibold text-violet-200">
-                  <ShieldCheck className="h-3.5 w-3.5 text-emerald-300" /> Secure sign-in
+                  <ShieldCheck className="h-3.5 w-3.5 text-[#6ee7b7]" /> Secure sign-in
                 </span>
                 <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-white">Welcome back</h1>
                 <p className="mt-1.5 text-sm text-violet-200/70">Sign in to continue to your dashboard.</p>
