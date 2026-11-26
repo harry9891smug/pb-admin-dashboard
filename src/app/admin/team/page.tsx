@@ -14,6 +14,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import { useCan } from "@/hooks/useCan";
 import Pagination from "@/components/ui/Pagination";
 import PageShell from "@/components/ui/PageShell";
 import { toast } from "react-hot-toast";
@@ -31,6 +32,7 @@ import {
 } from "@/lib/api";
 
 export default function TeamMembersPage() {
+  const can = useCan();
   const [items, setItems] = useState<AdminTeamMember[]>([]);
   const [jobRoles, setJobRoles] = useState<AdminJobRole[]>([]);
   const [groups, setGroups] = useState<AdminGroup[]>([]);
@@ -261,13 +263,15 @@ export default function TeamMembersPage() {
               <RefreshCw className="w-4 h-4 mr-2" />
               Refresh
             </button>
-            <button
-              onClick={openCreate}
-              className="inline-flex items-center justify-center rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-slate-950 shadow-lg hover:bg-emerald-400 transition-colors"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Create Member
-            </button>
+            {can("team.create") && (
+              <button
+                onClick={openCreate}
+                className="inline-flex items-center justify-center rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-slate-950 shadow-lg hover:bg-emerald-400 transition-colors"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Create Member
+              </button>
+            )}
           </div>
         </div>
 
@@ -325,12 +329,14 @@ export default function TeamMembersPage() {
             <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-10 text-center">
               <Users className="w-12 h-12 text-slate-600 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-slate-300 mb-2">No team members found</h3>
-              <button
-                onClick={openCreate}
-                className="mt-4 inline-flex items-center gap-2 rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-slate-950 hover:bg-emerald-400 transition-colors"
-              >
-                <Plus className="w-4 h-4" /> Create Member
-              </button>
+              {can("team.create") && (
+                <button
+                  onClick={openCreate}
+                  className="mt-4 inline-flex items-center gap-2 rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-slate-950 hover:bg-emerald-400 transition-colors"
+                >
+                  <Plus className="w-4 h-4" /> Create Member
+                </button>
+              )}
             </div>
           ) : (
             filtered.map((u) => (
@@ -362,20 +368,24 @@ export default function TeamMembersPage() {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => openEdit(u)}
-                    className="p-2 text-slate-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-colors"
-                    title="Edit"
-                  >
-                    <Edit className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(u.id)}
-                    className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
-                    title="Delete"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  {can("team.update") && (
+                    <button
+                      onClick={() => openEdit(u)}
+                      className="p-2 text-slate-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-colors"
+                      title="Edit"
+                    >
+                      <Edit className="w-4 h-4" />
+                    </button>
+                  )}
+                  {can("team.delete") && (
+                    <button
+                      onClick={() => handleDelete(u.id)}
+                      className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                      title="Delete"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
               </div>
             ))

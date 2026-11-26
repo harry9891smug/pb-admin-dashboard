@@ -9,6 +9,7 @@ import { Pencil, Trash2, Play, Upload, Clapperboard, Plus, X } from "lucide-reac
 import { isAuthenticated } from "@/lib/api";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import PageShell from "@/components/ui/PageShell";
+import { useCan } from "@/hooks/useCan";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import {
   listLanguages,
@@ -52,9 +53,14 @@ const errMsg = (e: any, fallback: string) =>
 
 type Tab = "videos" | "addons" | "languages" | "tutorial";
 
-function Switch({ on, onClick }: { on: boolean; onClick: () => void }) {
+function Switch({ on, onClick, disabled }: { on: boolean; onClick: () => void; disabled?: boolean }) {
   return (
-    <button onClick={onClick} title={on ? "Click to deactivate" : "Click to activate"} className="flex items-center gap-2">
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      title={on ? "Click to deactivate" : "Click to activate"}
+      className="flex items-center gap-2 disabled:cursor-not-allowed disabled:opacity-60"
+    >
       <span className={`relative h-6 w-11 rounded-full transition ${on ? "bg-emerald-500" : "bg-gray-300"}`}>
         <span
           className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all ${
@@ -108,6 +114,7 @@ function Modal({
 
 export default function AppContentPage() {
   const router = useRouter();
+  const canManage = useCan()("content.manage");
 
   useEffect(() => {
     if (!isAuthenticated()) router.replace("/login");
@@ -417,7 +424,7 @@ export default function AppContentPage() {
         {/* ------------------------------------------------------------ Videos */}
         {!loading && tab === "videos" ? (
           <div className="space-y-4">
-            <div className="flex justify-end">
+            <div className={`flex justify-end ${canManage ? "" : "hidden"}`}>
               <button onClick={() => openVideo()} className={btnPrimary} disabled={!addons.length || !languages.length}>
                 <Plus className="h-4 w-4" /> Add Video
               </button>
@@ -436,7 +443,7 @@ export default function AppContentPage() {
                         </span>
                       ) : null}
                     </div>
-                    <button onClick={() => openVideo(undefined, a.id)} className={btnGhost}>
+                    <button onClick={() => openVideo(undefined, a.id)} className={`${btnGhost} ${canManage ? "" : "hidden"}`}>
                       <Plus className="h-3.5 w-3.5" /> Add video
                     </button>
                   </div>
@@ -467,6 +474,7 @@ export default function AppContentPage() {
                           </div>
                           <Switch
                             on={v.isActive}
+                            disabled={!canManage}
                             onClick={() =>
                               run(() => updateAddonVideo(v.id, { isActive: !v.isActive }), v.isActive ? "Deactivated" : "Activated")
                             }
@@ -477,7 +485,7 @@ export default function AppContentPage() {
                                 <Play className="h-3.5 w-3.5" /> Preview
                               </button>
                             ) : null}
-                            <button onClick={() => openVideo(v)} className={btnGhost}>
+                            <button onClick={() => openVideo(v)} className={`${btnGhost} ${canManage ? "" : "hidden"}`}>
                               <Pencil className="h-3.5 w-3.5" /> Edit
                             </button>
                             <button
@@ -489,7 +497,7 @@ export default function AppContentPage() {
                                   action: () => run(() => deleteAddonVideo(v.id), "Deleted"),
                                 })
                               }
-                              className={btnDanger}
+                              className={`${btnDanger} ${canManage ? "" : "hidden"}`}
                             >
                               <Trash2 className="h-3.5 w-3.5" /> Delete
                             </button>
@@ -517,7 +525,7 @@ export default function AppContentPage() {
         {/* ----------------------------------------------------------- Add-ons */}
         {!loading && tab === "addons" ? (
           <div className="space-y-3">
-            <div className="flex justify-end">
+            <div className={`flex justify-end ${canManage ? "" : "hidden"}`}>
               <button onClick={() => openAddon()} className={btnPrimary}>
                 <Plus className="h-4 w-4" /> Add Add-on
               </button>
@@ -532,8 +540,8 @@ export default function AppContentPage() {
                       {a.videoCount === 1 ? "" : "s"}
                     </div>
                   </div>
-                  <Switch on={a.isActive} onClick={() => run(() => updateAddon(a.id, { isActive: !a.isActive }), "Updated")} />
-                  <div className="flex gap-2">
+                  <Switch disabled={!canManage} on={a.isActive} onClick={() => run(() => updateAddon(a.id, { isActive: !a.isActive }), "Updated")} />
+                  <div className={`flex gap-2 ${canManage ? "" : "hidden"}`}>
                     <button onClick={() => openAddon(a)} className={btnGhost}>
                       <Pencil className="h-3.5 w-3.5" /> Edit
                     </button>
@@ -567,7 +575,7 @@ export default function AppContentPage() {
         {/* --------------------------------------------------------- Languages */}
         {!loading && tab === "languages" ? (
           <div className="space-y-3">
-            <div className="flex justify-end">
+            <div className={`flex justify-end ${canManage ? "" : "hidden"}`}>
               <button onClick={() => openLanguage()} className={btnPrimary}>
                 <Plus className="h-4 w-4" /> Add Language
               </button>
@@ -585,8 +593,8 @@ export default function AppContentPage() {
                       {l.videoCount === 1 ? "" : "s"}
                     </div>
                   </div>
-                  <Switch on={l.isActive} onClick={() => run(() => updateLanguage(l.code, { isActive: !l.isActive }), "Updated")} />
-                  <div className="flex gap-2">
+                  <Switch disabled={!canManage} on={l.isActive} onClick={() => run(() => updateLanguage(l.code, { isActive: !l.isActive }), "Updated")} />
+                  <div className={`flex gap-2 ${canManage ? "" : "hidden"}`}>
                     <button onClick={() => openLanguage(l)} className={btnGhost}>
                       <Pencil className="h-3.5 w-3.5" /> Edit
                     </button>
@@ -632,16 +640,19 @@ export default function AppContentPage() {
                     <div className="min-w-[260px] flex-1">
                       <label className={labelCls}>Tutorial URL</label>
                       <input
+                        disabled={!canManage}
                         value={tutorialUrl(l.code)}
                         onChange={(e) => setTDraft((p) => ({ ...p, [l.code]: e.target.value }))}
                         placeholder="https://..."
                         className={inputCls}
                       />
                     </div>
+                    {canManage ? (
                     <button onClick={() => saveTutorial(l.code)} className={btnPrimary}>
                       Save
                     </button>
-                    {saved ? (
+                    ) : null}
+                    {saved && canManage ? (
                       <button
                         onClick={() =>
                           askDelete({

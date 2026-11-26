@@ -48,6 +48,8 @@ export interface BusinessOwner {
   id: number;
   mobile: string;
   role: string;
+  email?: string | null;
+  isPhoneVerified?: boolean;
 }
 
 export interface BusinessSubscription {
@@ -56,6 +58,7 @@ export interface BusinessSubscription {
   status: string;
   trialEndsAt: string | null;
   currentPeriodEnd: string | null;
+  createdAt?: string | null;
 }
 
 export interface Business {
@@ -1074,7 +1077,8 @@ export interface CreateBusinessInput {
   ownerUserId: number;
   name: string;
   businessname: string;
-  category: string;
+  /** Business category id (the backend expects a number). */
+  category: number;
   address: string;
   address1?: string;
   state: string;
@@ -1105,7 +1109,7 @@ export const updateBusinessAdmin = async (
   payload: {
     name?: string;
     businessname?: string;
-    category?: string;
+    category?: number;
     address?: string;
     address1?: string;
     state?: string;

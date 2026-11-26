@@ -15,6 +15,7 @@ import {
   Users,
 } from "lucide-react";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import { useCan } from "@/hooks/useCan";
 import { toast } from "react-hot-toast";
 
 import {
@@ -27,6 +28,7 @@ import {
 } from "@/lib/api";
 
 export default function JobRolesPage() {
+  const can = useCan();
   const [items, setItems] = useState<AdminJobRole[]>([]);
   const [groups, setGroups] = useState<AdminGroup[]>([]);
 
@@ -172,12 +174,14 @@ export default function JobRolesPage() {
             >
               <RefreshCw className="w-4 h-4 mr-2" /> Refresh
             </button>
-            <button
-              onClick={openCreate}
-              className="inline-flex items-center rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-slate-950 hover:bg-emerald-400"
-            >
-              <Plus className="w-4 h-4 mr-2" /> Create Role
-            </button>
+            {can("access.create_job_role") && (
+              <button
+                onClick={openCreate}
+                className="inline-flex items-center rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-slate-950 hover:bg-emerald-400"
+              >
+                <Plus className="w-4 h-4 mr-2" /> Create Role
+              </button>
+            )}
           </div>
         </div>
 
@@ -232,12 +236,14 @@ export default function JobRolesPage() {
               <h3 className="text-lg font-medium text-slate-300 mb-2">
                 No job roles found
               </h3>
-              <button
-                onClick={openCreate}
-                className="mt-4 inline-flex items-center gap-2 rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-slate-950 hover:bg-emerald-400"
-              >
-                <Plus className="w-4 h-4" /> Create Job Role
-              </button>
+              {can("access.create_job_role") && (
+                <button
+                  onClick={openCreate}
+                  className="mt-4 inline-flex items-center gap-2 rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-slate-950 hover:bg-emerald-400"
+                >
+                  <Plus className="w-4 h-4" /> Create Job Role
+                </button>
+              )}
             </div>
           ) : (
             paginated.map((r) => (
@@ -256,12 +262,14 @@ export default function JobRolesPage() {
                   </div>
                 </div>
 
-                <button
-                  onClick={() => openGroups(r)}
-                  className="px-3 py-2 rounded-lg border border-slate-700 text-sm hover:bg-slate-800"
-                >
-                  Assign Groups
-                </button>
+                {can("access.set_job_role_groups") && (
+                  <button
+                    onClick={() => openGroups(r)}
+                    className="px-3 py-2 rounded-lg border border-slate-700 text-sm hover:bg-slate-800"
+                  >
+                    Assign Groups
+                  </button>
+                )}
               </div>
             ))
           )}

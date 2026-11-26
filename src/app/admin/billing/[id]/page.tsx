@@ -18,6 +18,7 @@ import {
 import { cn } from "@/lib/utils";
 import { toastSuccess, toastError } from "@/lib/toast";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import { useCan } from "@/hooks/useCan";
 
 // ─── Status config ────────────────────────────────────────────────────────
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; dot: string }> = {
@@ -35,6 +36,9 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; 
 };
 
 export default function BillingDetailPage() {
+  const can = useCan();
+  const canUpdate = can("subscription.update");
+  const canCancel = can("subscription.cancel");
   const router = useRouter();
   const params = useParams<{ id: string }>();
   const id = useMemo(() => Number(params?.id), [params]);
@@ -175,45 +179,50 @@ export default function BillingDetailPage() {
       <div className="rounded-xl border border-slate-700 bg-slate-900 p-5">
         <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-4">Actions</p>
         <div className="flex flex-wrap gap-2">
-          {sub.status !== "active" && (
+          {canUpdate && sub.status !== "active" && (
             <ActionChip color="#10b981" bg="rgba(16,185,129,0.12)" onClick={() => doAction(() => billingActivate(sub.id), "Activated ✓")} disabled={actionLoading}>
               ✓ Activate
             </ActionChip>
           )}
-          {sub.status === "active" && (
+          {canUpdate && sub.status === "active" && (
             <ActionChip color="#f59e0b" bg="rgba(245,158,11,0.12)" onClick={() => doAction(() => billingSuspend(sub.id), "Suspended")} disabled={actionLoading}>
               ⏸ Suspend
             </ActionChip>
           )}
-          {sub.status !== "cancelled" && (
+          {canCancel && sub.status !== "cancelled" && (
             <ActionChip color="#ef4444" bg="rgba(239,68,68,0.12)" onClick={() => doAction(() => billingCancel(sub.id), "Cancelled")} disabled={actionLoading}>
               ✕ Cancel
             </ActionChip>
           )}
-          <ActionChip color="#3b82f6" bg="rgba(59,130,246,0.12)" onClick={() => setGraceModal(true)} disabled={actionLoading}>
-            ⊕ Extend Grace
-          </ActionChip>
-          <ActionChip color="#a78bfa" bg="rgba(167,139,250,0.12)" onClick={() => { setRefundPaymentId(sub.last_payment_id ?? ""); setRefundModal(true); }} disabled={actionLoading}>
-            ↩ Refund
-          </ActionChip>
-          <ActionChip color="#f97316" bg="rgba(249,115,22,0.12)" onClick={() => setPlanModal(true)} disabled={actionLoading}>
-            ⇄ Change Plan
-          </ActionChip>
-        <ActionChip color="#06b6d4" bg="rgba(6,182,212,0.15)" onClick={() => doAction(() => billingDisableMandate(sub.id), "Mandate disabled")} disabled={actionLoading}>
-  ⊘ Disable Mandate
-</ActionChip>
-
-<ActionChip color="#8b5cf6" bg="rgba(139,92,246,0.15)" onClick={() => setBillingDateModal(true)} disabled={actionLoading}>
-  ✎ Billing Date
-</ActionChip>
-          <ActionChip color="#ef4444" bg="rgba(239,68,68,0.08)" onClick={() => {
-            if (confirm("Permanently delete? This will also cancel the Razorpay subscription.")) {
-              doAction(() => billingDelete(sub.id), "Deleted");
-              router.push("/admin/billing");
-            }
-          }} disabled={actionLoading}>
-            ⌫ Delete
-          </ActionChip>
+          {canUpdate && (
+            <>
+              <ActionChip color="#3b82f6" bg="rgba(59,130,246,0.12)" onClick={() => setGraceModal(true)} disabled={actionLoading}>
+                ⊕ Extend Grace
+              </ActionChip>
+              <ActionChip color="#a78bfa" bg="rgba(167,139,250,0.12)" onClick={() => { setRefundPaymentId(sub.last_payment_id ?? ""); setRefundModal(true); }} disabled={actionLoading}>
+                ↩ Refund
+              </ActionChip>
+              <ActionChip color="#f97316" bg="rgba(249,115,22,0.12)" onClick={() => setPlanModal(true)} disabled={actionLoading}>
+                ⇄ Change Plan
+              </ActionChip>
+              <ActionChip color="#06b6d4" bg="rgba(6,182,212,0.15)" onClick={() => doAction(() => billingDisableMandate(sub.id), "Mandate disabled")} disabled={actionLoading}>
+                ⊘ Disable Mandate
+              </ActionChip>
+              <ActionChip color="#8b5cf6" bg="rgba(139,92,246,0.15)" onClick={() => setBillingDateModal(true)} disabled={actionLoading}>
+                ✎ Billing Date
+              </ActionChip>
+            </>
+          )}
+          {canCancel && (
+            <ActionChip color="#ef4444" bg="rgba(239,68,68,0.08)" onClick={() => {
+              if (confirm("Permanently delete? This will also cancel the Razorpay subscription.")) {
+                doAction(() => billingDelete(sub.id), "Deleted");
+                router.push("/admin/billing");
+              }
+            }} disabled={actionLoading}>
+              ⌫ Delete
+            </ActionChip>
+          )}
         </div>
       </div>
 
@@ -244,7 +253,7 @@ export default function BillingDetailPage() {
           </Field>
           <SheetFooter
             onCancel={() => setRefundModal(false)}
-            onConfirm={() => { doAction(() => billingRefund(sub.id, refundPaymentId || undefined, refundAmount ? Number(refundAmount) : undefined), "Refund processed"); setRefundModal(false); }}
+            onConfirm={() => { doAction(() => billingRefund(sub.id, { paymentId: refundPaymentId || undefined, amountPaise: refundAmount ? Number(refundAmount) : undefined }), "Refund processed"); setRefundModal(false); }}
             confirmLabel="Process Refund" confirmColor="bg-purple-600 hover:bg-purple-500"
           />
         </Sheet>

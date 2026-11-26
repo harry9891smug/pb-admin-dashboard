@@ -10,6 +10,7 @@ import {
 } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import { useCan } from "@/hooks/useCan";
 import PageShell from "@/components/ui/PageShell";
 
 type Row = {
@@ -34,6 +35,7 @@ type Row = {
 };
 
 export default function AdminSubscriptionsPage() {
+  const can = useCan();
   const [loading, setLoading] = useState(false);
   const [rows, setRows] = useState<Row[]>([]);
   const [page, setPage] = useState(1);
@@ -311,6 +313,7 @@ const fetchData = async () => {
                           View
                         </Link>
 
+                        {can("subscription.cancel") && (
                         <button
                           onClick={() => onCancel(r.id)}
                           disabled={r.status === "cancelled"}
@@ -323,6 +326,7 @@ const fetchData = async () => {
                         >
                           Cancel
                         </button>
+                        )}
                       </div>
                     </Td>
                   </tr>

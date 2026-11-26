@@ -23,6 +23,7 @@ import {
   Image as ImageIcon,
 } from "lucide-react";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import { useCan } from "@/hooks/useCan";
 import Pagination from "@/components/ui/Pagination";
 import PageShell from "@/components/ui/PageShell";
 import { toast } from "react-hot-toast";
@@ -294,6 +295,7 @@ function LogoUploadField({
 
 
 export default function BusinessesPage() {
+  const can = useCan();
   const [viewLoading, setViewLoading] = useState(false);
   const [viewOpen, setViewOpen] = useState(false);
   const [viewBusiness, setViewBusiness] = useState<Business | null>(null);
@@ -436,7 +438,7 @@ const stateOptions = useMemo(() => {
     );
   };
 
-  const formatDate = (dateString: string | null) => {
+  const formatDate = (dateString: string | null | undefined) => {
     if (!dateString) return "N/A";
     try {
       const date = new Date(dateString);
@@ -522,7 +524,7 @@ const stateOptions = useMemo(() => {
       const payload = {
         name: editBizForm.name.trim(),
         businessname: editBizForm.businessname.trim(),
-        category: editBizForm.category.trim(),
+        category: editBizForm.category,
         address: editBizForm.address.trim(),
         address1: editBizForm.address1.trim() || undefined,
         state: editBizForm.state.trim(),
@@ -779,13 +781,15 @@ const stateOptions = useMemo(() => {
               Refresh
             </button>
 
-            <button
-              onClick={openCreate}
-              className="inline-flex items-center justify-center rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-slate-950 shadow-lg hover:bg-emerald-400 transition-colors"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Create Business
-            </button>
+            {can("business.create") && (
+              <button
+                onClick={openCreate}
+                className="inline-flex items-center justify-center rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-slate-950 shadow-lg hover:bg-emerald-400 transition-colors"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Create Business
+              </button>
+            )}
           </div>
         </div>
 
@@ -991,31 +995,39 @@ const stateOptions = useMemo(() => {
                               className="absolute right-0 mt-2 w-52 rounded-xl border border-slate-800 bg-slate-950 shadow-lg overflow-hidden z-50"
                               onClick={(e) => e.stopPropagation()}
                             >
-                              <button
-                                type="button"
-                                onClick={() => openEditUser(business)}
-                                className="w-full text-left px-4 py-2.5 text-sm text-slate-200 hover:bg-slate-800"
-                              >
-                                Edit phone number
-                              </button>
+                              {can("business.update") && (
+                                <>
+                                  <button
+                                    type="button"
+                                    onClick={() => openEditUser(business)}
+                                    className="w-full text-left px-4 py-2.5 text-sm text-slate-200 hover:bg-slate-800"
+                                  >
+                                    Edit phone number
+                                  </button>
 
-                              <button
-                                type="button"
-                                onClick={() => openEditBusiness(business)}
-                                className="w-full text-left px-4 py-2.5 text-sm text-slate-200 hover:bg-slate-800"
-                              >
-                                Edit business details
-                              </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => openEditBusiness(business)}
+                                    className="w-full text-left px-4 py-2.5 text-sm text-slate-200 hover:bg-slate-800"
+                                  >
+                                    Edit business details
+                                  </button>
+                                </>
+                              )}
 
-                              <div className="h-px bg-slate-800" />
+                              {can("business.update") && can("business.delete") && (
+                                <div className="h-px bg-slate-800" />
+                              )}
 
-                              <button
-                                type="button"
-                                onClick={() => handleDelete(business)}
-                                className="w-full text-left px-4 py-2.5 text-sm text-red-300 hover:bg-red-500/10"
-                              >
-                                Delete
-                              </button>
+                              {can("business.delete") && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleDelete(business)}
+                                  className="w-full text-left px-4 py-2.5 text-sm text-red-300 hover:bg-red-500/10"
+                                >
+                                  Delete
+                                </button>
+                              )}
                             </div>
                           )}
                         </div>
@@ -1609,7 +1621,7 @@ function Field(props: {
   );
 }
 
-function Info({ label, value }: { label: string; value: string }) {
+function Info({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="rounded-lg border border-slate-800 bg-slate-900/40 p-3">
       <p className="text-xs text-slate-400">{label}</p>

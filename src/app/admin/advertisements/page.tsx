@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import { useCan } from "@/hooks/useCan";
 import Pagination from "@/components/ui/Pagination";
 import PageShell from "@/components/ui/PageShell";
 import { toast } from "react-hot-toast";
@@ -66,6 +67,7 @@ const emptyForm: FormState = {
 };
 
 export default function AdvertisementsPage() {
+  const can = useCan();
   const [items, setItems] = useState<Advertisement[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -365,13 +367,15 @@ export default function AdvertisementsPage() {
               <RefreshCw className="w-4 h-4 mr-2" />
               Refresh
             </button>
-            <button
-              onClick={openCreate}
-              className="inline-flex items-center justify-center rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-slate-950 shadow-lg hover:bg-emerald-400 transition-colors"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Create Advertisement
-            </button>
+            {can("offer.create") && (
+              <button
+                onClick={openCreate}
+                className="inline-flex items-center justify-center rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-slate-950 shadow-lg hover:bg-emerald-400 transition-colors"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Create Advertisement
+              </button>
+            )}
           </div>
         </div>
 
@@ -451,12 +455,14 @@ export default function AdvertisementsPage() {
             <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-10 text-center">
               <ImageIcon className="w-12 h-12 text-slate-600 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-slate-300 mb-2">No advertisements found</h3>
-              <button
-                onClick={openCreate}
-                className="mt-4 inline-flex items-center gap-2 rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-slate-950 hover:bg-emerald-400 transition-colors"
-              >
-                <Plus className="w-4 h-4" /> Create Advertisement
-              </button>
+              {can("offer.create") && (
+                <button
+                  onClick={openCreate}
+                  className="mt-4 inline-flex items-center gap-2 rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-slate-950 hover:bg-emerald-400 transition-colors"
+                >
+                  <Plus className="w-4 h-4" /> Create Advertisement
+                </button>
+              )}
             </div>
           ) : (
             paginated.map((ad) => (
@@ -519,20 +525,24 @@ export default function AdvertisementsPage() {
                 </div>
 
                 <div className="flex items-center gap-2 justify-end">
-                  <button
-                    onClick={() => openEdit(ad)}
-                    className="p-2 text-slate-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-colors"
-                    title="Edit"
-                  >
-                    <Edit className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(ad.id)}
-                    className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
-                    title="Delete"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  {can("offer.update") && (
+                    <button
+                      onClick={() => openEdit(ad)}
+                      className="p-2 text-slate-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-colors"
+                      title="Edit"
+                    >
+                      <Edit className="w-4 h-4" />
+                    </button>
+                  )}
+                  {can("offer.delete") && (
+                    <button
+                      onClick={() => handleDelete(ad.id)}
+                      className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                      title="Delete"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
               </div>
             ))

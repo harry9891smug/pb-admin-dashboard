@@ -11,7 +11,7 @@ type BillingInvoiceRow = {
   businessId: number;
   subscriptionId: number | null;
   invoiceNumber: string;
-  razorpayPaymentId: string | null;
+  razorpayPaymentId?: string | null;
   invoiceDate: string;
   currency: string;
   taxableAmount: string;
@@ -87,7 +87,9 @@ export default function PaymentsPage() {
         q,
       });
 
-      const invoices: BillingInvoiceRow[] = res?.data?.invoices || [];
+      // The API row type is looser (optional/nullable fields) than this page's
+      // display type; the data shape itself is unchanged.
+      const invoices = (res?.data?.invoices || []) as unknown as BillingInvoiceRow[];
       setRows(invoices);
 
       const p = res?.data?.pagination;

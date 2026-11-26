@@ -11,6 +11,7 @@ import {
   CheckCircle,
 } from "lucide-react";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import { useCan } from "@/hooks/useCan";
 import Pagination from "@/components/ui/Pagination";
 import PageShell from "@/components/ui/PageShell";
 import { toast } from "react-hot-toast";
@@ -98,6 +99,7 @@ function stringifyTopups(options: any[] | undefined) {
 }
 
 export default function PlansPage() {
+  const can = useCan();
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -324,12 +326,14 @@ export default function PlansPage() {
             >
               <RefreshCw className="w-4 h-4 mr-2" /> Refresh
             </button>
-            <button
-              onClick={openCreate}
-              className="inline-flex items-center justify-center rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-slate-950 shadow-lg hover:bg-emerald-400 transition-colors"
-            >
-              <Plus className="w-4 h-4 mr-2" /> Create Plan
-            </button>
+            {can("subscription.create") && (
+              <button
+                onClick={openCreate}
+                className="inline-flex items-center justify-center rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-slate-950 shadow-lg hover:bg-emerald-400 transition-colors"
+              >
+                <Plus className="w-4 h-4 mr-2" /> Create Plan
+              </button>
+            )}
           </div>
         </div>
 
@@ -461,20 +465,24 @@ export default function PlansPage() {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => openEdit(plan)}
-                    className="p-2 text-slate-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg"
-                    title="Edit"
-                  >
-                    <Edit className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(plan.id)}
-                    className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg"
-                    title="Delete"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  {can("subscription.update") && (
+                    <button
+                      onClick={() => openEdit(plan)}
+                      className="p-2 text-slate-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg"
+                      title="Edit"
+                    >
+                      <Edit className="w-4 h-4" />
+                    </button>
+                  )}
+                  {can("subscription.cancel") && (
+                    <button
+                      onClick={() => handleDelete(plan.id)}
+                      className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg"
+                      title="Delete"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
               </div>
             ))

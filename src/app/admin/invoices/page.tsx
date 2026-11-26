@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useState, useRef } from "react";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import { useCan } from "@/hooks/useCan";
 import Pagination from "@/components/ui/Pagination";
 import PageShell from "@/components/ui/PageShell";
 import { toast } from "react-hot-toast";
@@ -48,6 +49,7 @@ import {
 } from "lucide-react";
 
 export default function AdminInvoicesPage() {
+  const can = useCan();
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [selectedBusinessId, setSelectedBusinessId] = useState<number | "">("");
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -267,7 +269,7 @@ export default function AdminInvoicesPage() {
       
       // Fetch full details
       const details = await getAdminInvoiceById(invoice.id);
-      setInvoiceDetails(details);
+      setInvoiceDetails(details.data);
     } catch (err: any) {
       toast.error(err.message || "Failed to load invoice details");
       // Still show basic info
@@ -288,7 +290,7 @@ export default function AdminInvoicesPage() {
       customerAddress: invoice.customerAddress || "",
       notes: invoice.notes || "",
       paymentStatus: invoice.paymentStatus,
-      paidAmount: parseFloat(invoice.paidAmount),
+      paidAmount: Number(invoice.paidAmount),
     });
     setEditModalOpen(true);
   };
@@ -318,7 +320,7 @@ export default function AdminInvoicesPage() {
   const handleAddPayment = (invoice: Invoice) => {
     setSelectedInvoice(invoice);
     setPaymentForm({
-      amount: parseFloat(invoice.totalAmount) - parseFloat(invoice.paidAmount),
+      amount: Number(invoice.totalAmount) - Number(invoice.paidAmount),
       notes: "",
     });
     setPaymentModalOpen(true);
@@ -332,7 +334,7 @@ export default function AdminInvoicesPage() {
       return;
     }
 
-    const remaining = parseFloat(selectedInvoice.totalAmount) - parseFloat(selectedInvoice.paidAmount);
+    const remaining = Number(selectedInvoice.totalAmount) - Number(selectedInvoice.paidAmount);
     if (paymentForm.amount > remaining) {
       toast.error(`Amount cannot exceed remaining balance ₹${remaining}`);
       return;
@@ -518,13 +520,15 @@ export default function AdminInvoicesPage() {
             <p className="text-sm text-slate-400 mt-1">Manage and monitor all business invoices</p>
           </div>
           <div className="flex gap-2">
-            <button
-              onClick={() => setCreateModalOpen(true)}
-              className="inline-flex items-center justify-center rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-600 transition-colors"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Create Invoice
-            </button>
+            {can("invoice.create") && (
+              <button
+                onClick={() => setCreateModalOpen(true)}
+                className="inline-flex items-center justify-center rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-600 transition-colors"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Create Invoice
+              </button>
+            )}
             <button
               onClick={fetchInvoices}
               disabled={loading}
@@ -746,7 +750,7 @@ export default function AdminInvoicesPage() {
 
                         <div className="flex items-center gap-2 text-slate-400">
                           <CreditCard className="w-4 h-4" />
-                          <span>Balance: {formatCurrency(parseFloat(invoice.totalAmount) - parseFloat(invoice.paidAmount))}</span>
+                          <span>Balance: {formatCurrency(Number(invoice.totalAmount) - Number(invoice.paidAmount))}</span>
                         </div>
                       </div>
                     </div>
@@ -772,16 +776,18 @@ export default function AdminInvoicesPage() {
                         </button>
 
                         {/* EDIT */}
-                        <button
-                          onClick={() => handleEditInvoice(invoice)}
-                          className="p-2 text-slate-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-colors"
-                          title="Edit Invoice"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </button>
+                        {can("invoice.update") && (
+                          <button
+                            onClick={() => handleEditInvoice(invoice)}
+                            className="p-2 text-slate-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-colors"
+                            title="Edit Invoice"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                        )}
 
                         {/* ADD PAYMENT */}
-                        {invoice.paymentStatus !== "paid" && (
+                        {can("invoice.add_payment") && invoice.paymentStatus !== "paid" && (
                           <button
                             onClick={() => handleAddPayment(invoice)}
                             className="p-2 text-slate-400 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg transition-colors"
@@ -792,32 +798,38 @@ export default function AdminInvoicesPage() {
                         )}
 
                         {/* EDIT ITEMS */}
-                        <button
-                          onClick={() => handleEditItems(invoice)}
-                          className="p-2 text-slate-400 hover:text-purple-400 hover:bg-purple-500/10 rounded-lg transition-colors"
-                          title="Edit Items"
-                        >
-                          <FileText className="w-4 h-4" />
-                        </button>
+                        {can("invoice.update_items") && (
+                          <button
+                            onClick={() => handleEditItems(invoice)}
+                            className="p-2 text-slate-400 hover:text-purple-400 hover:bg-purple-500/10 rounded-lg transition-colors"
+                            title="Edit Items"
+                          >
+                            <FileText className="w-4 h-4" />
+                          </button>
+                        )}
 
                         {/* RESEND SMS */}
-                        <button
-                          onClick={() => handleResendSms(invoice)}
-                          disabled={resendingSms}
-                          className="p-2 text-slate-400 hover:text-cyan-400 hover:bg-cyan-500/10 rounded-lg transition-colors disabled:opacity-50"
-                          title="Resend SMS"
-                        >
-                          <Send className="w-4 h-4" />
-                        </button>
+                        {can("invoice.resend_sms") && (
+                          <button
+                            onClick={() => handleResendSms(invoice)}
+                            disabled={resendingSms}
+                            className="p-2 text-slate-400 hover:text-cyan-400 hover:bg-cyan-500/10 rounded-lg transition-colors disabled:opacity-50"
+                            title="Resend SMS"
+                          >
+                            <Send className="w-4 h-4" />
+                          </button>
+                        )}
 
                         {/* DELETE */}
-                        <button
-                          onClick={() => handleDeleteInvoice(invoice)}
-                          className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
-                          title="Delete Invoice"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        {can("invoice.delete") && (
+                          <button
+                            onClick={() => handleDeleteInvoice(invoice)}
+                            className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                            title="Delete Invoice"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
 
                         {/* MORE OPTIONS */}
                         <div className="relative">
@@ -1243,7 +1255,7 @@ export default function AdminInvoicesPage() {
                     <p className="text-xs text-slate-400">Balance Due</p>
                     <p className="text-xl font-semibold text-emerald-400 mt-1">
                       {formatCurrency(
-                        parseFloat(selectedInvoice.totalAmount) - parseFloat(selectedInvoice.paidAmount)
+                        Number(selectedInvoice.totalAmount) - Number(selectedInvoice.paidAmount)
                       )}
                     </p>
                   </div>
@@ -1392,7 +1404,7 @@ export default function AdminInvoicesPage() {
                     className="w-full px-3 py-2.5 rounded-lg border border-slate-700 bg-slate-900 text-slate-100 text-sm outline-none"
                     disabled={updating}
                     min={0}
-                    max={parseFloat(selectedInvoice.totalAmount)}
+                    max={Number(selectedInvoice.totalAmount)}
                   />
                 </div>
               </div>
@@ -1449,7 +1461,7 @@ export default function AdminInvoicesPage() {
                 </p>
                 <p className="text-sm text-slate-400 mt-1">
                   Paid: {formatCurrency(selectedInvoice.paidAmount)} • 
-                  Balance: {formatCurrency(parseFloat(selectedInvoice.totalAmount) - parseFloat(selectedInvoice.paidAmount))}
+                  Balance: {formatCurrency(Number(selectedInvoice.totalAmount) - Number(selectedInvoice.paidAmount))}
                 </p>
               </div>
 
@@ -1462,7 +1474,7 @@ export default function AdminInvoicesPage() {
                   className="w-full px-3 py-2.5 rounded-lg border border-slate-700 bg-slate-900 text-slate-100 text-sm outline-none"
                   disabled={addingPayment}
                   min={0.01}
-                  max={parseFloat(selectedInvoice.totalAmount) - parseFloat(selectedInvoice.paidAmount)}
+                  max={Number(selectedInvoice.totalAmount) - Number(selectedInvoice.paidAmount)}
                   step={0.01}
                 />
               </div>

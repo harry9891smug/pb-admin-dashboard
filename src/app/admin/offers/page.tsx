@@ -22,6 +22,7 @@ import {
 } from "@/lib/api";
 import { toast } from "react-hot-toast";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import { useCan } from "@/hooks/useCan";
 import Pagination from "@/components/ui/Pagination";
 import PageShell from "@/components/ui/PageShell";
 
@@ -47,6 +48,7 @@ interface Offer {
 }
 
 export default function OffersPage() {
+  const can = useCan();
   const [offers, setOffers] = useState<Offer[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -808,16 +810,18 @@ export default function OffersPage() {
                         </button>
 
                         {/* EDIT */}
-                        <button
-                          onClick={() => handleEditOffer(offer)}
-                          className="p-2 text-slate-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-colors"
-                          title="Edit"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </button>
+                        {can("offer.update") && (
+                          <button
+                            onClick={() => handleEditOffer(offer)}
+                            className="p-2 text-slate-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-colors"
+                            title="Edit"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                        )}
 
                         {/* APPROVE/REJECT for awaiting approval */}
-                        {offer.status === "awaiting_approval" && (
+                        {can("offer.moderate") && offer.status === "awaiting_approval" && (
                           <>
                             <button
                               onClick={() => handleApproveOffer(offer.id)}
@@ -843,7 +847,7 @@ export default function OffersPage() {
                         )}
 
                         {/* ACTIVATE/DEACTIVATE for active/inactive */}
-                        {offer.status === "active" && (
+                        {can("offer.change_status") && offer.status === "active" && (
                           <button
                             onClick={() => handleChangeStatus(offer.id, "inactive")}
                             disabled={processingOffer === offer.id}
@@ -858,7 +862,7 @@ export default function OffersPage() {
                           </button>
                         )}
 
-                        {offer.status === "inactive" && (
+                        {can("offer.change_status") && offer.status === "inactive" && (
                           <button
                             onClick={() => handleChangeStatus(offer.id, "active")}
                             disabled={processingOffer === offer.id}
@@ -874,14 +878,16 @@ export default function OffersPage() {
                         )}
 
                         {/* DELETE */}
-                        <button
-                          onClick={() => handleDeleteOffer(offer.id)}
-                          disabled={isDeleting}
-                          className="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors disabled:opacity-50"
-                          title="Delete"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        {can("offer.delete") && (
+                          <button
+                            onClick={() => handleDeleteOffer(offer.id)}
+                            disabled={isDeleting}
+                            className="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors disabled:opacity-50"
+                            title="Delete"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
 
                         {/* MORE OPTIONS */}
                         <div className="relative">
@@ -1341,7 +1347,7 @@ export default function OffersPage() {
               {/* ✅ FIXED: Handle business object */}
               <Info label="Business" value={
                 (() => {
-                  const business = selectedOffer.business;
+                  const business: any = selectedOffer.business;
                   if (typeof business === 'string') {
                     return business;
                   } else if (business && typeof business === 'object') {
@@ -1443,7 +1449,7 @@ export default function OffersPage() {
             >
               Close
             </button>
-            {selectedOffer.status === "awaiting_approval" && (
+            {can("offer.moderate") && selectedOffer.status === "awaiting_approval" && (
               <>
                 <button
                   onClick={() => handleApproveOffer(selectedOffer.id)}

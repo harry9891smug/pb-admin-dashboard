@@ -23,6 +23,14 @@ import {
   Coins,
   Star,
   Rocket,
+  LifeBuoy,
+  PhoneCall,
+  Inbox,
+  ScanSearch,
+  SlidersHorizontal,
+  History,
+  FolderOpen,
+  Activity,
 } from "lucide-react";
 
 // Single source of truth for every navigable admin page — Sidebar renders it
@@ -40,11 +48,25 @@ export type NavItem = {
   icon: any;
   permission?: string;
   keywords?: string[];
+  // Which live counter (see useSupportBadges) to show beside this link.
+  badgeKey?: "cases" | "callbacks";
 };
 
 export type NavSection = { key: string; title: string; items: NavItem[] };
 
 export const navSections: NavSection[] = [
+  {
+    key: "support-desk",
+    title: "Support Desk",
+    items: [
+      { href: "/admin/insights", label: "Insights", icon: Activity, permission: "insights.view", keywords: ["revenue", "health", "satisfaction", "rating", "infra", "server", "status", "overview", "operations"] },
+      { href: "/admin/business-360", label: "Business 360", icon: ScanSearch, permission: "support.business_search", keywords: ["customer", "lookup", "search", "mobile", "support", "everything"] },
+      { href: "/admin/cases", label: "Cases", icon: LifeBuoy, permission: "case.view_all", badgeKey: "cases", keywords: ["tickets", "complaints", "support", "issues"] },
+      { href: "/admin/cases?view=callbacks", label: "Callbacks", icon: PhoneCall, permission: "case.view_all", badgeKey: "callbacks", keywords: ["call back", "call me", "phone"] },
+      { href: "/admin/support-queues", label: "Support Queues", icon: Inbox, permission: "support_queue.view", keywords: ["teams", "routing"] },
+      { href: "/admin/case-settings", label: "Case Settings", icon: SlidersHorizontal, permission: "case.view_all", keywords: ["status", "category", "priority", "sla", "config"] },
+    ],
+  },
   {
     key: "access",
     title: "Access Control",
@@ -52,6 +74,7 @@ export const navSections: NavSection[] = [
       { href: "/admin/access/permissions", label: "Permissions", icon: KeyRound, permission: "permission.view_permission" },
       { href: "/admin/access/groups", label: "Groups", icon: ShieldCheck, permission: "role.maintain_role", keywords: ["roles"] },
       { href: "/admin/access/job-roles", label: "Job Roles", icon: Briefcase, permission: "access.view_job_roles" },
+      { href: "/admin/audit-logs", label: "Audit Log", icon: History, permission: "audit.view", keywords: ["activity", "history", "who changed", "logs", "actions"] },
       { href: "/admin/team", label: "Team Members", icon: Users, permission: "team.view", keywords: ["staff", "employees", "users"] },
     ],
   },
@@ -100,6 +123,7 @@ export const navSections: NavSection[] = [
     key: "support-tools",
     title: "Support Tools",
     items: [
+      { href: "/admin/media", label: "Media Manager", icon: FolderOpen, permission: "media.view", keywords: ["s3", "files", "photos", "videos", "documents", "storage", "upload", "unused"] },
       { href: "/admin/test-accounts", label: "PromoBandhu Test Accounts", icon: FlaskConical, permission: "test_account.view", keywords: ["reviewer", "demo", "qa", "trial", "google review", "promobandhu"] },
       { href: "/admin/feedback", label: "App Feedback", icon: Star, permission: "feedback.view", keywords: ["rating", "reviews", "comments"] },
       { href: "/admin/app-version", label: "App Version", icon: Rocket, permission: "app_version.update", keywords: ["release", "update", "force update", "apk"] },

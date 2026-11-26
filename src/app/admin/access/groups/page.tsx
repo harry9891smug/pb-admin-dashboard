@@ -390,6 +390,26 @@ export default function GroupsPage() {
                 </button>
               </div>
 
+              <div className="mb-3 flex items-center gap-2 text-sm">
+                <button
+                  type="button"
+                  onClick={() => setSelectedPermIds(permissions.map((p) => p.id))}
+                  className="px-3 py-1 border border-slate-700 rounded-lg hover:bg-slate-800"
+                >
+                  Select all
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedPermIds([])}
+                  className="px-3 py-1 border border-slate-700 rounded-lg hover:bg-slate-800"
+                >
+                  Clear
+                </button>
+                <span className="text-slate-400">
+                  {selectedPermIds.length} of {permissions.length} selected
+                </span>
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[55vh] overflow-auto">
                 {permissions.map((p) => (
                   <label

@@ -8,6 +8,7 @@ import { Pencil, Trash2, Play, Upload, Film, Plus, X, RotateCcw } from "lucide-r
 import { isAuthenticated } from "@/lib/api";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import PageShell from "@/components/ui/PageShell";
+import { useCan } from "@/hooks/useCan";
 import {
   adminListVideos,
   adminCreateVideo,
@@ -73,6 +74,8 @@ const btnGhost =
 
 export default function VideosPage() {
   const router = useRouter();
+  const can = useCan();
+  const canManage = can("content.manage");
 
   useEffect(() => {
     if (!isAuthenticated()) router.replace("/login");
@@ -255,12 +258,14 @@ export default function VideosPage() {
               </p>
             </div>
           </div>
+          {canManage ? (
           <button
             onClick={openCreate}
             className="inline-flex items-center gap-2 whitespace-nowrap rounded-xl bg-violet-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-violet-700"
           >
             <Plus className="h-4 w-4" /> Add Video
           </button>
+          ) : null}
         </div>
         }
       >
@@ -350,8 +355,9 @@ export default function VideosPage() {
                     {/* Active switch */}
                     <button
                       onClick={() => toggleStatus(v)}
+                      disabled={!canManage}
                       title={v.status === "active" ? "Click to deactivate" : "Click to activate"}
-                      className="flex items-center gap-2"
+                      className="flex items-center gap-2 disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       <span
                         className={`relative h-6 w-11 rounded-full transition ${
@@ -370,7 +376,7 @@ export default function VideosPage() {
                     </button>
 
                     {/* Actions */}
-                    <div className="flex gap-2">
+                    <div className={`flex gap-2 ${canManage ? "" : "hidden"}`}>
                       <button
                         onClick={() => onShowAgain(v)}
                         title="Everyone who has watched or skipped it will see it again"

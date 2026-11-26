@@ -16,6 +16,7 @@ import {
   type TemplateSourceType,
 } from "@/lib/api";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import { useCan } from "@/hooks/useCan";
 import PageShell from "@/components/ui/PageShell";
 
 type FormState = {
@@ -42,6 +43,7 @@ const emptyForm: FormState = {
 };
 
 export default function TemplateImagesPage() {
+  const can = useCan();
   const router = useRouter();
 const shortUrl = (u: string) => (u.length > 48 ? u.slice(0, 48) + "..." : u);
 
@@ -261,12 +263,14 @@ const [previewTitle, setPreviewTitle] = useState<string>("");
           </p>
         </div>
 
-        <button
-          onClick={openCreate}
-          className="px-4 py-2 rounded-lg bg-emerald-500/15 border border-emerald-500/40 text-black-200 hover:bg-emerald-500/20 transition"
-        >
-          + Add Template Image
-        </button>
+        {can("offer.create") && (
+          <button
+            onClick={openCreate}
+            className="px-4 py-2 rounded-lg bg-emerald-500/15 border border-emerald-500/40 text-black-200 hover:bg-emerald-500/20 transition"
+          >
+            + Add Template Image
+          </button>
+        )}
       </div>
 
       {/* Filters */}
@@ -552,19 +556,23 @@ const [previewTitle, setPreviewTitle] = useState<string>("");
   {/* Actions */}
   <td className="px-4 py-4 align-top">
     <div className="flex justify-end gap-2">
-      <button
-        onClick={() => openEdit(r.id)}
-        className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-800 bg-slate-900 text-black-200 hover:bg-slate-800 transition"
-      >
-        <Pencil className="h-4 w-4" /> Edit
-      </button>
+      {can("offer.update") && (
+        <button
+          onClick={() => openEdit(r.id)}
+          className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-800 bg-slate-900 text-black-200 hover:bg-slate-800 transition"
+        >
+          <Pencil className="h-4 w-4" /> Edit
+        </button>
+      )}
 
-      <button
-        onClick={() => onDeactivate(r.id)}
-        className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-rose-500/40 bg-rose-500/10 text-black-200 hover:bg-rose-500/15 transition"
-      >
-        <Trash2 className="h-4 w-4" /> Deactivate
-      </button>
+      {can("offer.delete") && (
+        <button
+          onClick={() => onDeactivate(r.id)}
+          className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-rose-500/40 bg-rose-500/10 text-black-200 hover:bg-rose-500/15 transition"
+        >
+          <Trash2 className="h-4 w-4" /> Deactivate
+        </button>
+      )}
     </div>
   </td>
 </tr>

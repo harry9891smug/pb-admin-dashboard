@@ -51,7 +51,7 @@ export default function SubscriptionDetailPage() {
     try {
       const res = await getAdminSubscriptionById(id);
       const sub = res?.data?.subscription;
-      setRow(sub ?? null);
+      setRow((sub as unknown as SubDetail | undefined) ?? null);
     } catch (e: any) {
       console.error(e);
       setRow(null);

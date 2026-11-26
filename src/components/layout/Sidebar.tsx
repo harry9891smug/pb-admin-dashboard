@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSupportBadges } from "@/hooks/useSupportBadges";
 import { ChevronDown, LayoutDashboard, X } from "lucide-react";
 import { navSections as sections, type NavItem as LinkItem } from "@/lib/navigation";
 
@@ -87,7 +88,16 @@ function SidebarBody() {
     [permissions]
   );
 
-  const isActive = (href: string) => pathname === href || pathname.startsWith(href + "/");
+  const badges = useSupportBadges();
+
+  const isActive = (href: string) => {
+    if (href.includes("?")) return false; // query-style shortcuts never mark active
+    return pathname === href || pathname.startsWith(href + "/");
+  };
+
+  // Total of the counters inside a section, shown on its header when collapsed
+  const sectionAlerts = (items: LinkItem[]) =>
+    items.reduce((n, it) => n + (it.badgeKey ? badges[it.badgeKey] : 0), 0);
 
   // auto-open the section that holds the current page
   const defaultOpen = useMemo(() => {
@@ -153,6 +163,11 @@ function SidebarBody() {
                   >
                     {section.title}
                   </span>
+                  {!open && sectionAlerts(section.items) > 0 ? (
+                    <span className="ml-auto mr-2 rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white">
+                      {sectionAlerts(section.items)}
+                    </span>
+                  ) : null}
                   <ChevronDown
                     className={cn(
                       "h-4 w-4 text-white/35 transition-transform duration-200",
@@ -170,6 +185,7 @@ function SidebarBody() {
                         label={it.label}
                         icon={it.icon}
                         active={isActive(it.href)}
+                        badge={it.badgeKey ? badges[it.badgeKey] : 0}
                       />
                     ))}
                   </div>
@@ -201,11 +217,13 @@ function SidebarLink({
   label,
   icon: Icon,
   active,
+  badge = 0,
 }: {
   href: string;
   label: string;
   icon: any;
   active: boolean;
+  badge?: number;
 }) {
   return (
     <Link
@@ -231,6 +249,11 @@ function SidebarLink({
         <Icon className="h-4 w-4" />
       </span>
       <span className="flex-1 truncate">{label}</span>
+      {badge > 0 ? (
+        <span className="rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-bold leading-none text-white">
+          {badge > 99 ? "99+" : badge}
+        </span>
+      ) : null}
     </Link>
   );
 }

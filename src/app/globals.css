@@ -17,6 +17,10 @@
 
 html {
   -webkit-text-size-adjust: 100%;
+  /* Compact team-facing UI: Tailwind sizes are rem-based, so lowering the root
+     size (default 16px) shrinks text, buttons and spacing together and gives
+     tables/lists more room. Set back to 16px to undo. */
+  font-size: 14px;
 }
 
 body {
