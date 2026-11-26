@@ -345,9 +345,10 @@ export default function OffersPage() {
 
     try {
       setIsDeleting(true);
-      await deleteAdminOffer(offerId);
+      const del = await deleteAdminOffer(offerId);
       toast.success("Offer deleted successfully!");
-      
+      (del?.warnings || []).forEach((w: string) => toast.error(w, { duration: 10000 }));
+
       setOffers(prev => prev.filter(o => o.id !== offerId));
       setStats(prev => ({
         ...prev,

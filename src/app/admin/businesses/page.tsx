@@ -431,7 +431,13 @@ const stateOptions = useMemo(() => {
       enterprise: { class: "bg-cyan-500/20 text-cyan-300 border-cyan-500/40", label: "Enterprise" },
     };
 
-    const config = planConfig[plan || "basic"] || planConfig.basic;
+    // Show the plan's real name. Previously any name that was not basic/pro/
+    // enterprise was displayed as "Basic", which hid the actual plan.
+    const key = (plan || "").toLowerCase();
+    const config = planConfig[key] || {
+      class: "bg-violet-500/20 text-violet-700 border-violet-500/40",
+      label: plan || "-",
+    };
 
     return (
       <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border ${config.class}`}>

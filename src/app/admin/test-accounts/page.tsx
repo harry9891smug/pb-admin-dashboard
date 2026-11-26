@@ -11,18 +11,21 @@ import {
   CheckCircle,
   FlaskConical,
   Copy,
+  Trash2,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import Pagination from "@/components/ui/Pagination";
 import PageShell from "@/components/ui/PageShell";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   adminListTestAccounts,
   adminCreateTestAccount,
   adminExtendTestAccount,
   adminRevokeTestAccount,
+  adminDeleteTestAccount,
   TEST_ACCOUNT_TYPES,
   TestAccount,
   TestAccountType,
@@ -48,6 +51,8 @@ export default function TestAccountsPage() {
   const canCreate = permissions.includes("test_account.create");
   const canExtend = permissions.includes("test_account.extend");
   const canRevoke = permissions.includes("test_account.revoke");
+  const canDelete = permissions.includes("test_account.delete");
+  const [deleteTarget, setDeleteTarget] = useState<TestAccount | null>(null);
 
   const [items, setItems] = useState<TestAccount[]>([]);
   const [loading, setLoading] = useState(true);
@@ -221,6 +226,17 @@ export default function TestAccountsPage() {
       fetchData();
     } catch (e: any) {
       toast.error(e.message || "Revoke failed");
+    }
+  };
+
+  const runDelete = async (account: TestAccount) => {
+    try {
+      const r = await adminDeleteTestAccount(account.userId);
+      toast.success(`Test account deleted${r.filesDeleted ? ` (${r.filesDeleted} file(s) removed)` : ""}`);
+      (r.warnings || []).forEach((w) => toast.error(w, { duration: 12000 }));
+      fetchData();
+    } catch (e: any) {
+      toast.error(e.message || "Delete failed");
     }
   };
 
@@ -425,12 +441,41 @@ export default function TestAccountsPage() {
                       Revoke
                     </button>
                   )}
+                  {canDelete && (
+                    <button
+                      onClick={() => setDeleteTarget(a)}
+                      className="inline-flex items-center gap-1.5 px-3 py-2 text-sm text-red-600 hover:bg-red-500/10 rounded-lg transition-colors border border-red-300"
+                      title="Delete permanently"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      Delete
+                    </button>
+                  )}
                 </div>
               </div>
             ))
           )}
         </div>
       </PageShell>
+
+        <ConfirmDialog
+          open={!!deleteTarget}
+          tone="danger"
+          title="Delete this test account?"
+          message={
+            deleteTarget
+              ? `${deleteTarget.email} and its business, data and S3 files will be removed permanently.`
+              : undefined
+          }
+          requireText={deleteTarget?.email ?? undefined}
+          confirmLabel="Delete permanently"
+          onCancel={() => setDeleteTarget(null)}
+          onConfirm={() => {
+            const t = deleteTarget;
+            setDeleteTarget(null);
+            if (t) runDelete(t);
+          }}
+        />
 
         {/* Create modal */}
         {isCreateOpen && (

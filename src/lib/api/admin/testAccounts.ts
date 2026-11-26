@@ -107,6 +107,21 @@ export const adminExtendTestAccount = async (
   }
 };
 
+// DELETE /admin/test-accounts/:userId — requires test_account.delete
+export const adminDeleteTestAccount = async (
+  userId: number
+): Promise<{ filesDeleted: number; warnings: string[] }> => {
+  const token = ensureToken();
+  try {
+    const res = await apiClient.delete(`/admin/test-accounts/${userId}`, {
+      headers: authHeader(token),
+    });
+    return res.data?.data ?? { filesDeleted: 0, warnings: [] };
+  } catch (err: any) {
+    throw new Error(extractApiError(err));
+  }
+};
+
 // PATCH /admin/test-accounts/:userId/revoke — requires test_account.revoke
 export const adminRevokeTestAccount = async (
   userId: number
