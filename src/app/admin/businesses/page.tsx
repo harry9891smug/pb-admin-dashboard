@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState, useRef } from "react";
 import { MoreVertical } from "lucide-react";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import statesList from "@/data/states.json";
 
 import {
@@ -296,6 +297,7 @@ function LogoUploadField({
 
 export default function BusinessesPage() {
   const can = useCan();
+  const [deleteTarget, setDeleteTarget] = useState<{ business: Business; label: string } | null>(null);
   const [viewLoading, setViewLoading] = useState(false);
   const [viewOpen, setViewOpen] = useState(false);
   const [viewBusiness, setViewBusiness] = useState<Business | null>(null);
@@ -715,18 +717,35 @@ const stateOptions = useMemo(() => {
   // =========================
   // ✅ DELETE USER + BUSINESS
   // =========================
-  const handleDelete = async (business: Business) => {
+  const handleDelete = (business: Business) => {
     const ownerId = (business as any)?.owner?.id;
     if (!ownerId) return toast.error("Owner userId not found");
 
-    const ok = confirm("Delete this user? (Also delete business = true)");
-    if (!ok) return;
+    const label = String(
+      (business as any)?.businessname || (business as any)?.name || `Business ${business.id}`
+    ).trim();
+    setDeleteTarget({ business, label });
+  };
 
-    await toast.promise(deleteAdminUser(ownerId, true), {
-      loading: "Deleting...",
-      success: "Deleted!",
-      error: (e: any) => e.message || "Delete failed",
-    });
+  const runDelete = async (business: Business) => {
+    const ownerId = (business as any)?.owner?.id;
+    if (!ownerId) return toast.error("Owner userId not found");
+
+    try {
+      const data: any = await toast.promise(deleteAdminUser(ownerId, true), {
+        loading: "Deleting...",
+        success: "Deleted!",
+        error: (e: any) => e.message || "Delete failed",
+      });
+      if (typeof data?.filesDeleted === "number") {
+        toast.success(`${data.filesDeleted} file(s) removed from S3`);
+      }
+      (data?.warnings || []).forEach((w: string) =>
+        toast.error(w, { duration: 12000 })
+      );
+    } catch {
+      /* error toast already shown */
+    }
 
     fetchBusinesses();
   };
@@ -1588,6 +1607,32 @@ const stateOptions = useMemo(() => {
             </div>
           </div>
         )}
+
+        <ConfirmDialog
+          open={!!deleteTarget}
+          tone="danger"
+          title="Delete this business permanently?"
+          message={
+            deleteTarget
+              ? `${deleteTarget.label} (ID ${deleteTarget.business.id}) will be removed completely. This cannot be undone.`
+              : undefined
+          }
+          details={[
+            "Owner account, business profile and logo",
+            "Offers, customers, invoices, payments, billing and subscription records",
+            "Team, products, inventory, HR and support cases",
+            "Razorpay subscription is cancelled",
+            "All its files in the S3 bucket are deleted",
+          ]}
+          requireText={deleteTarget?.label}
+          confirmLabel="Delete everything"
+          onCancel={() => setDeleteTarget(null)}
+          onConfirm={() => {
+            const target = deleteTarget;
+            setDeleteTarget(null);
+            if (target) runDelete(target.business);
+          }}
+        />
       </>
     </ProtectedRoute>
   );

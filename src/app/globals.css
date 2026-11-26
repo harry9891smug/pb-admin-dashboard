@@ -120,6 +120,26 @@ body {
 .text-yellow-200, .text-amber-200, .text-amber-300 { color: #92400e; }
 .text-yellow-400 { color: #ca8a04; }
 .text-cyan-400 { color: #0891b2; }
+.text-cyan-300 { color: #0e7490; }
+.text-blue-200, .text-blue-300 { color: #1d4ed8; }
+.text-yellow-300 { color: #854d0e; }
+
+/* Remaining soft tints written for dark mode: give them solid light fills so
+   the dark text above stays readable. (bg-*-500/20 for blue/emerald/etc. are
+   mapped earlier.) */
+.bg-yellow-500\/10, .bg-yellow-500\/15, .bg-yellow-500\/20 { background-color: #fef6d8; }
+.bg-amber-500\/10, .bg-amber-500\/20 { background-color: #fdf0d5; }
+.bg-red-500\/10, .bg-red-500\/15, .bg-red-500\/20 { background-color: #fdeceb; }
+.bg-blue-500\/10 { background-color: #eaf0fe; }
+.bg-slate-500\/20 { background-color: #eceef3; }
+.border-yellow-500\/40, .border-yellow-500\/30 { border-color: #f1d77a; }
+.border-red-500\/40, .border-red-500\/30 { border-color: #f6b7b3; }
+.border-blue-500\/40, .border-blue-500\/30 { border-color: #b6c9f8; }
+.border-slate-500\/40 { border-color: #cfd4de; }
+
+/* Close "×" buttons: hover:text-white would vanish on light modals. */
+button.text-slate-400.hover\:text-white:hover,
+a.text-slate-400.hover\:text-white:hover { color: var(--pb-ink); }
 
 /* Borders */
 .border-slate-800 { border-color: var(--pb-line); }

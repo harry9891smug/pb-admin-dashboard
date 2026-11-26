@@ -3,17 +3,23 @@
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
-import { Search, ChevronLeft, ChevronRight, CalendarPlus } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, CalendarPlus, Pencil, Trash2 } from "lucide-react";
 
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import RecordEditor from "@/components/business360/RecordEditor";
 import { useCan } from "@/hooks/useCan";
 import { apiErrorMessage } from "@/lib/api/admin/cases";
 import {
+  deleteRecord360,
   extendTrial,
+  getMeta360,
   getOverview360,
   getSection360,
   search360,
   unlockLogin,
+  updateRecord360,
+  type Biz360Meta,
   type Biz360Overview,
   type Biz360SearchRow,
   type Biz360SectionData,
@@ -136,6 +142,17 @@ function Inner() {
   const [busy, setBusy] = useState(false);
   const [selected, setSelected] = useState<Record<string, any> | null>(null);
 
+  // editing
+  const canEdit = can("support.data_edit");
+  const canDelete = can("support.data_delete");
+  const [bizMeta, setBizMeta] = useState<Biz360Meta | null>(null);
+  const [ownerMeta, setOwnerMeta] = useState<Biz360Meta | null>(null);
+  const [secMeta, setSecMeta] = useState<Biz360Meta | null>(null);
+  const [editProfile, setEditProfile] = useState(false);
+  const [editRow, setEditRow] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [confirmDel, setConfirmDel] = useState(false);
+
   const open = (id: number) => router.push(`/admin/business-360?id=${id}`);
 
   // search (debounced)
@@ -190,6 +207,72 @@ function Inner() {
       alive = false;
     };
   }, [idParam, tab, page]);
+
+  // field definitions for the profile editor and the selected section
+  useEffect(() => {
+    setBizMeta(null);
+    setOwnerMeta(null);
+    if (!idParam || !canEdit) return;
+    getMeta360(idParam, "business").then(setBizMeta).catch(() => {});
+    getMeta360(idParam, "owner").then(setOwnerMeta).catch(() => {});
+  }, [idParam, canEdit]);
+
+  useEffect(() => {
+    setSecMeta(null);
+    setEditRow(false);
+    if (!idParam || !tab || !(canEdit || canDelete)) return;
+    getMeta360(idParam, tab).then(setSecMeta).catch(() => {});
+  }, [idParam, tab, canEdit, canDelete]);
+
+  const reloadSection = () => {
+    if (!idParam || !tab) return;
+    getSection360(idParam, tab, PAGE, (page - 1) * PAGE).then(setData).catch(() => {});
+    loadOverview(idParam);
+  };
+
+  const saveProfile = async (target: "business" | "owner", rowId: number, changes: Record<string, any>) => {
+    if (!idParam) return;
+    if (Object.keys(changes).length === 0) return;
+    setSaving(true);
+    try {
+      await updateRecord360(idParam, target, rowId, changes);
+      toast.success(target === "owner" ? "Owner updated" : "Business updated");
+      await loadOverview(idParam);
+    } catch (e) {
+      toast.error(apiErrorMessage(e, "Could not save"));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const saveRow = async (changes: Record<string, any>) => {
+    if (!idParam || !selected?.id) return;
+    setSaving(true);
+    try {
+      const r = await updateRecord360(idParam, tab, Number(selected.id), changes);
+      toast.success("Saved");
+      setSelected(r.row);
+      setEditRow(false);
+      reloadSection();
+    } catch (e) {
+      toast.error(apiErrorMessage(e, "Could not save"));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const removeRow = async () => {
+    if (!idParam || !selected?.id) return;
+    setConfirmDel(false);
+    try {
+      await deleteRecord360(idParam, tab, Number(selected.id));
+      toast.success("Deleted");
+      setSelected(null);
+      reloadSection();
+    } catch (e) {
+      toast.error(apiErrorMessage(e, "Could not delete"));
+    }
+  };
 
   const b = overview?.business;
   const sub = overview?.subscription;
@@ -283,10 +366,15 @@ function Inner() {
             <div className="rounded-lg border border-gray-200 bg-white p-3">
               <div className="mb-2 flex items-center gap-2">
                 {b.logoUrl ? <img src={b.logoUrl} alt="" className="h-9 w-9 rounded object-cover" /> : null}
-                <div>
+                <div className="flex-1">
                   <div className="text-sm font-bold text-gray-900">{b.businessname || b.name}</div>
                   <div className="text-[11px] text-gray-500">Business #{b.id} • Public ID {b.publicId || "-"}</div>
                 </div>
+                {canEdit && bizMeta ? (
+                  <button className={btnCls} onClick={() => setEditProfile(true)}>
+                    <Pencil className="h-3 w-3" /> Edit
+                  </button>
+                ) : null}
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <Info label="Owner name" value={b.name} />
@@ -463,11 +551,36 @@ function Inner() {
                 {overview?.sections.find((s) => s.key === tab)?.label ?? "Record"}
                 {selected.id != null ? ` #${selected.id}` : ""}
               </h3>
-              <button className={btnCls} onClick={() => setSelected(null)}>
-                Close
-              </button>
+              <div className="flex items-center gap-1.5">
+                {canEdit && secMeta && secMeta.editable.length > 0 && selected.id != null && !editRow ? (
+                  <button className={btnPrimary} onClick={() => setEditRow(true)}>
+                    <Pencil className="h-3 w-3" /> Edit
+                  </button>
+                ) : null}
+                {canDelete && secMeta?.deletable && selected.id != null ? (
+                  <button
+                    className="inline-flex h-7 items-center gap-1 rounded-md border border-red-200 bg-white px-2.5 text-xs font-medium text-red-600 hover:bg-red-50"
+                    onClick={() => setConfirmDel(true)}
+                  >
+                    <Trash2 className="h-3 w-3" /> Delete
+                  </button>
+                ) : null}
+                <button className={btnCls} onClick={() => setSelected(null)}>
+                  Close
+                </button>
+              </div>
             </div>
-            <div className="space-y-2">
+            {editRow && secMeta ? (
+              <RecordEditor
+                key={String(selected.id)}
+                meta={secMeta}
+                values={selected}
+                saving={saving}
+                onSave={saveRow}
+                onCancel={() => setEditRow(false)}
+              />
+            ) : null}
+            <div className={`space-y-2 ${editRow ? "mt-4 border-t border-gray-200 pt-3 opacity-70" : ""}`}>
               {Object.keys(selected).map((k) => (
                 <div key={k} className="border-b border-gray-100 pb-1.5">
                   <div className="text-[10px] uppercase tracking-wide text-gray-400">{pretty(k)}</div>
@@ -480,6 +593,53 @@ function Inner() {
           </div>
         </div>
       ) : null}
+
+      {editProfile && b && bizMeta ? (
+        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 p-4">
+          <div className="w-full max-w-lg rounded-xl bg-white p-4 shadow-xl">
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-sm font-bold text-gray-900">Edit business #{b.id}</h3>
+              <button className={btnCls} onClick={() => setEditProfile(false)}>
+                Close
+              </button>
+            </div>
+
+            <div className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-500">Business details</div>
+            <RecordEditor
+              meta={bizMeta}
+              values={b}
+              saving={saving}
+              onSave={(c) => saveProfile("business", Number(b.id), c)}
+              onCancel={() => setEditProfile(false)}
+            />
+
+            {ownerMeta && overview?.owner ? (
+              <div className="mt-5 border-t border-gray-200 pt-3">
+                <div className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+                  Owner login (mobile / email)
+                </div>
+                <RecordEditor
+                  meta={ownerMeta}
+                  values={overview.owner}
+                  saving={saving}
+                  onSave={(c) => saveProfile("owner", overview.owner!.id, c)}
+                  onCancel={() => setEditProfile(false)}
+                />
+              </div>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
+
+      <ConfirmDialog
+        open={confirmDel}
+        tone="danger"
+        title="Delete this record?"
+        message={`${overview?.sections.find((s) => s.key === tab)?.label ?? "Record"} #${selected?.id ?? ""} will be removed permanently.`}
+        confirmLabel="Delete"
+        onCancel={() => setConfirmDel(false)}
+        onConfirm={removeRow}
+      />
     </div>
   );
 }

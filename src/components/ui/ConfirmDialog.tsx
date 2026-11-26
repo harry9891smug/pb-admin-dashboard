@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { AlertTriangle, LogOut, Trash2, HelpCircle } from "lucide-react";
 
@@ -40,6 +40,8 @@ export default function ConfirmDialog({
   tone = "default",
   onConfirm,
   onCancel,
+  requireText,
+  details,
 }: {
   open: boolean;
   title: string;
@@ -49,17 +51,28 @@ export default function ConfirmDialog({
   tone?: Tone;
   onConfirm: () => void;
   onCancel: () => void;
+  /** When set, the user must type this exact text before Confirm is enabled. */
+  requireText?: string;
+  /** Optional bullet points shown under the message (e.g. what will be deleted). */
+  details?: string[];
 }) {
-  // Esc closes, Enter confirms
+  const [typed, setTyped] = useState("");
+  const ready = !requireText || typed.trim().toLowerCase() === requireText.trim().toLowerCase();
+
+  useEffect(() => {
+    if (!open) setTyped("");
+  }, [open]);
+
+  // Esc closes, Enter confirms (never while a typed confirmation is still required)
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onCancel();
-      if (e.key === "Enter") onConfirm();
+      if (e.key === "Enter" && ready) onConfirm();
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [open, onConfirm, onCancel]);
+  }, [open, ready, onConfirm, onCancel]);
 
   if (!open || typeof document === "undefined") return null;
   const t = tones[tone] ?? tones.default;
@@ -92,6 +105,31 @@ export default function ConfirmDialog({
           <h3 className="mt-4 text-xl font-extrabold tracking-tight text-gray-900">{title}</h3>
           {message && <p className="mt-1.5 text-sm leading-relaxed text-gray-500">{message}</p>}
 
+          {details && details.length > 0 && (
+            <ul className="mt-3 space-y-1 rounded-xl bg-red-50 px-4 py-3 text-left text-xs text-red-800">
+              {details.map((d) => (
+                <li key={d} className="flex gap-2">
+                  <span>•</span>
+                  <span>{d}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {requireText && (
+            <div className="mt-4 text-left">
+              <label className="text-xs font-semibold text-gray-600">
+                Type <span className="rounded bg-gray-100 px-1 font-mono text-gray-900">{requireText}</span> to confirm
+              </label>
+              <input
+                value={typed}
+                onChange={(e) => setTyped(e.target.value)}
+                autoFocus
+                className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 outline-none focus:border-red-400"
+              />
+            </div>
+          )}
+
           <div className="mt-6 grid grid-cols-2 gap-3">
             <button
               onClick={onCancel}
@@ -101,8 +139,9 @@ export default function ConfirmDialog({
             </button>
             <button
               onClick={onConfirm}
-              autoFocus
-              className={`rounded-xl bg-gradient-to-r px-4 py-2.5 text-sm font-bold text-white shadow-lg transition hover:brightness-110 active:scale-[0.98] ${t.btn}`}
+              disabled={!ready}
+              autoFocus={!requireText}
+              className={`rounded-xl bg-gradient-to-r px-4 py-2.5 text-sm font-bold text-white shadow-lg transition hover:brightness-110 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:brightness-100 ${t.btn}`}
             >
               {confirmLabel}
             </button>

@@ -335,7 +335,12 @@ function ActionChip({ children, color, bg, onClick, disabled }: {
       onClick={onClick}
       disabled={disabled}
       className="px-3.5 py-1.5 rounded-lg text-xs font-semibold border transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:brightness-110"
-      style={{ color: "#ffffff", background: bg, borderColor: `${color}60` }}
+      style={{
+        // Dark text on a light tint of the accent colour: readable on the light theme.
+        color: `color-mix(in srgb, ${color} 62%, #000)`,
+        background: `color-mix(in srgb, ${color} 16%, #fff)`,
+        borderColor: `color-mix(in srgb, ${color} 55%, #fff)`,
+      }}
     >
       {children}
     </button>

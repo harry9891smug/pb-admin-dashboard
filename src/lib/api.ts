@@ -1080,12 +1080,18 @@ export const deleteAdminUser = async (
   const token = getAuthToken();
   if (!token) throw new Error("Auth required");
 
-  const res = await apiClient.delete(`/admin-user/users/${userId}`, {
-    headers: { Authorization: `Bearer ${token}` },
-    params: { deleteBusiness },
-  });
-
-  return res.data;
+  try {
+    const res = await apiClient.delete(`/admin-user/users/${userId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+      params: { deleteBusiness },
+    });
+    return res.data;
+  } catch (err: any) {
+    // Show the server's real reason (e.g. which table still references this business)
+    // instead of axios' generic "Request failed with status code 500".
+    const msg = err?.response?.data?.error?.message || err?.response?.data?.message;
+    throw new Error(msg || err?.message || "Delete failed");
+  }
 };
 
 export interface CreateBusinessInput {

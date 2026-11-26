@@ -54,6 +54,29 @@ export const unlockLogin = async (businessId: number) =>
     message: string;
   };
 
+export interface Biz360Meta {
+  types: Record<string, string>;
+  nullable: Record<string, boolean>;
+  editable: string[];
+  deletable: boolean;
+}
+
+export const getMeta360 = async (businessId: number, target: string) =>
+  (await apiClient.get(`/admin/business-360/${businessId}/meta/${target}`)).data as Biz360Meta;
+
+export const updateRecord360 = async (
+  businessId: number,
+  target: string,
+  rowId: number,
+  changes: Record<string, any>
+) =>
+  (
+    await apiClient.patch(`/admin/business-360/${businessId}/record/${target}/${rowId}`, { changes })
+  ).data as { success: boolean; row: Record<string, any> };
+
+export const deleteRecord360 = async (businessId: number, target: string, rowId: number) =>
+  (await apiClient.delete(`/admin/business-360/${businessId}/record/${target}/${rowId}`)).data;
+
 export const extendTrial =async (businessId: number, additionalDays: number) =>
   (
     await apiClient.patch(`/admin/support/subscriptions/${businessId}/extend-trial`, {
