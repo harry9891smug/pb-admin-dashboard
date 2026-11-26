@@ -37,8 +37,54 @@ function fmtDate(v: string) {
     : d.toLocaleString("en-IN", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
 }
 
-function Cell({ k, v }: { k: string; v: any }) {
+const STATUS_TONE: Record<string, string> = {
+  active: "bg-green-100 text-green-700",
+  paid: "bg-green-100 text-green-700",
+  success: "bg-green-100 text-green-700",
+  captured: "bg-green-100 text-green-700",
+  approved: "bg-green-100 text-green-700",
+  open: "bg-blue-100 text-blue-700",
+  trial: "bg-blue-100 text-blue-700",
+  pending: "bg-amber-100 text-amber-700",
+  created: "bg-amber-100 text-amber-700",
+  grace: "bg-amber-100 text-amber-700",
+  retrying: "bg-amber-100 text-amber-700",
+  failed: "bg-red-100 text-red-700",
+  payment_failed: "bg-red-100 text-red-700",
+  cancelled: "bg-red-100 text-red-700",
+  expired: "bg-red-100 text-red-700",
+  suspended: "bg-red-100 text-red-700",
+  rejected: "bg-red-100 text-red-700",
+  inactive: "bg-gray-200 text-gray-600",
+  closed: "bg-gray-200 text-gray-600",
+};
+
+const MONEY_KEY = /(amount|price|total|mrp|fee|balance|paid|due|rate|cost|subtotal|tax|discount)/i;
+
+function Cell({ k, v, full }: { k: string; v: any; full?: boolean }) {
   if (v === null || v === undefined || v === "") return <span className="text-gray-300">-</span>;
+  if (typeof v === "object")
+    return full ? (
+      <pre className="max-h-48 overflow-auto whitespace-pre-wrap break-all rounded bg-gray-50 p-1.5 text-[11px] text-gray-700">
+        {JSON.stringify(v, null, 2)}
+      </pre>
+    ) : (
+      <code className="text-[10px] text-gray-600">{JSON.stringify(v).slice(0, 80)}</code>
+    );
+  if (/status|state$/i.test(k) && typeof v === "string" && STATUS_TONE[v.toLowerCase()]) {
+    return (
+      <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase ${STATUS_TONE[v.toLowerCase()]}`}>
+        {v.replace(/_/g, " ")}
+      </span>
+    );
+  }
+  if (/paise/i.test(k) && !Number.isNaN(Number(v))) return <>₹{(Number(v) / 100).toLocaleString("en-IN")}</>;
+  if (MONEY_KEY.test(k) && typeof v !== "boolean" && /^-?\d+(\.\d+)?$/.test(String(v)) && !/(id|count|percent)$/i.test(k)) {
+    return <>₹{Number(v).toLocaleString("en-IN")}</>;
+  }
+  if (full && typeof v === "string" && v.length > 40 && !/^https?:\/\//.test(v) && !isoRe.test(v)) {
+    return <span className="whitespace-pre-wrap break-words">{v}</span>;
+  }
   if (typeof v === "boolean")
     return (
       <span className={`rounded px-1 text-[10px] font-semibold ${v ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>
@@ -88,6 +134,7 @@ function Inner() {
   const [loadingSec, setLoadingSec] = useState(false);
   const [days, setDays] = useState("7");
   const [busy, setBusy] = useState(false);
+  const [selected, setSelected] = useState<Record<string, any> | null>(null);
 
   const open = (id: number) => router.push(`/admin/business-360?id=${id}`);
 
@@ -127,6 +174,7 @@ function Inner() {
     setData(null);
     setTab("");
     setPage(1);
+    setSelected(null);
     if (idParam) loadOverview(idParam);
   }, [idParam, loadOverview]);
 
@@ -314,7 +362,6 @@ function Inner() {
               <div className="grid grid-cols-3 gap-2">
                 {overview!.sections
                   .filter((s) => s.count !== null)
-                  .slice(0, 9)
                   .map((s) => (
                     <button
                       key={s.key}
@@ -355,7 +402,7 @@ function Inner() {
                 ))}
             </div>
 
-            <div className="max-h-[55vh] overflow-auto">
+            <div className="max-h-[calc(100vh-330px)] min-h-[260px] overflow-auto">
               {loadingSec ? <div className="p-4 text-xs text-gray-500">Loading…</div> : null}
               {!loadingSec && data && data.rows.length === 0 ? (
                 <div className="p-8 text-center text-xs text-gray-500">No records.</div>
@@ -371,7 +418,12 @@ function Inner() {
                   </thead>
                   <tbody>
                     {data.rows.map((r, i) => (
-                      <tr key={i} className="border-t border-gray-100 hover:bg-violet-50/40">
+                      <tr
+                        key={i}
+                        onClick={() => setSelected(r)}
+                        title="Click to see every field"
+                        className="cursor-pointer border-t border-gray-100 hover:bg-violet-50/40"
+                      >
                         {data.columns.map((c) => (
                           <td key={c} className="whitespace-nowrap px-2.5 py-1.5 text-gray-800">
                             <Cell k={c} v={r[c]} />
@@ -398,6 +450,35 @@ function Inner() {
             </div>
           </div>
         </>
+      ) : null}
+
+      {selected ? (
+        <div className="fixed inset-0 z-50 flex justify-end bg-black/30" onClick={() => setSelected(null)}>
+          <div
+            className="h-full w-full max-w-md overflow-y-auto border-l border-gray-200 bg-white p-4 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-sm font-bold text-gray-900">
+                {overview?.sections.find((s) => s.key === tab)?.label ?? "Record"}
+                {selected.id != null ? ` #${selected.id}` : ""}
+              </h3>
+              <button className={btnCls} onClick={() => setSelected(null)}>
+                Close
+              </button>
+            </div>
+            <div className="space-y-2">
+              {Object.keys(selected).map((k) => (
+                <div key={k} className="border-b border-gray-100 pb-1.5">
+                  <div className="text-[10px] uppercase tracking-wide text-gray-400">{pretty(k)}</div>
+                  <div className="text-xs text-gray-900">
+                    <Cell k={k} v={selected[k]} full />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       ) : null}
     </div>
   );

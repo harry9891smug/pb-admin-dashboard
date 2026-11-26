@@ -44,9 +44,10 @@ export default function CategoriesPage() {
 
   const [saving, setSaving] = useState(false);
 
-  const [form, setForm] = useState<{ name: string; status: Status }>({
+  const [form, setForm] = useState<{ name: string; status: Status; sortOrder: string }>({
     name: "",
     status: "active",
+    sortOrder: "0",
   });
 
   const fetchData = async () => {
@@ -96,13 +97,17 @@ export default function CategoriesPage() {
   }, [items]);
 
   const openCreate = () => {
-    setForm({ name: "", status: "active" });
+    setForm({ name: "", status: "active", sortOrder: "0" });
     setIsCreateOpen(true);
   };
 
   const openEdit = (cat: BusinessCategory) => {
     setEditing(cat);
-    setForm({ name: cat.name, status: cat.status });
+    setForm({
+      name: cat.name,
+      status: cat.status,
+      sortOrder: String((cat as any).sortOrder ?? 0),
+    });
     setIsEditOpen(true);
   };
 
@@ -127,11 +132,17 @@ export default function CategoriesPage() {
       setSaving(true);
 
       // ✅ API expects string: (name)
-      await toast.promise(createBusinessCategory(form.name.trim()), {
-        loading: "Creating category...",
-        success: "Category created!",
-        error: (e: any) => e.message || "Create failed",
-      });
+      await toast.promise(
+        createBusinessCategory(form.name.trim(), {
+          status: form.status,
+          sortOrder: Math.trunc(Number(form.sortOrder) || 0),
+        }),
+        {
+          loading: "Creating category...",
+          success: "Category created!",
+          error: (e: any) => e.message || "Create failed",
+        }
+      );
 
       // Optional: if you want status on create, do update after create
       // but easiest: keep default "active" on backend, and edit later.
@@ -156,7 +167,8 @@ export default function CategoriesPage() {
         updateBusinessCategory(editing.id, {
           name: form.name.trim(),
           status: form.status,
-        }),
+          sortOrder: Math.trunc(Number(form.sortOrder) || 0),
+        } as any),
         {
           loading: "Updating category...",
           success: "Category updated!",
@@ -392,6 +404,17 @@ export default function CategoriesPage() {
                     <option value="active">Active</option>
                     <option value="inactive">Inactive</option>
                   </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm text-slate-300 mb-1">Sort order</label>
+                  <input
+                    type="number"
+                    value={form.sortOrder}
+                    onChange={(e) => setForm({ ...form, sortOrder: e.target.value })}
+                    className="w-full px-3 py-2.5 rounded-lg border border-slate-700 bg-slate-900 text-slate-100 text-sm outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20"
+                  />
+                  <p className="text-xs text-slate-500 mt-1">Lower numbers appear first in the app.</p>
                 </div>
               </div>
 

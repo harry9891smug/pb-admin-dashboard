@@ -141,6 +141,7 @@ export interface BusinessCategory {
   id: number;
   name: string;
   status: "active" | "inactive";
+  sortOrder?: number;
   createdAt: string;
 }
 
@@ -808,11 +809,14 @@ export const getBusinessCategoriesAdmin = async (): Promise<BusinessCategory[]> 
       return unwrapList<BusinessCategory>(res); 
 };
 
-export const createBusinessCategory = async (name: string) => {
+export const createBusinessCategory = async (
+  name: string,
+  extra?: { status?: "active" | "inactive"; sortOrder?: number }
+) => {
   const token = getAuthToken();
   return apiClient.post(
     "/admin/business-categories",
-    { name },
+    { name, ...(extra ?? {}) },
     { headers: { Authorization: `Bearer ${token}` } }
   );
   

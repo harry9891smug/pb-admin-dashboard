@@ -439,6 +439,16 @@ main:has(.pb-shell) > .pb-page-root { height: 100%; }
 .pb-list-card { border-radius: 1.1rem; }
 .pb-list-scroll { padding: 0.6rem 0.8rem; }
 
+/* Older list pages (plans, offers, ads, referrals, ...) render each record as a
+   big card. Tighten them so more records fit on screen without editing every page. */
+.pb-list-scroll .grid.gap-4 { gap: 0.55rem; }
+.pb-list-scroll .grid.gap-4 > .rounded-xl.p-6,
+.pb-list-scroll .grid.gap-4 > .rounded-xl.p-5 { padding: 0.7rem 0.9rem; }
+.pb-list-scroll .grid.gap-4 > .rounded-xl h3 { font-size: 0.95rem; line-height: 1.3rem; }
+.pb-list-scroll .grid.gap-4 > .rounded-xl .space-y-2 > * + * { margin-top: 0.2rem; }
+.pb-list-scroll .grid.gap-4 > .rounded-xl .space-y-4 > * + * { margin-top: 0.4rem; }
+.pb-list-scroll .grid.gap-4 > .rounded-xl button { padding-top: 0.3rem; padding-bottom: 0.3rem; }
+
 /* ----- list card ----- */
 .pb-list-card {
   flex: 1 1 auto;

@@ -9,6 +9,7 @@ import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import PageShell from "@/components/ui/PageShell";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { useCan } from "@/hooks/useCan";
+import { getAlertSound, setAlertSound } from "@/hooks/useSupportBadges";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   addCaseRemark,
@@ -94,6 +95,8 @@ function CasesInner() {
   const params = useSearchParams();
   const { user } = useAuth();
   const can = useCan();
+  const [soundOn, setSoundOn] = useState(true);
+  useEffect(() => setSoundOn(getAlertSound()), []);
   const myId = (user as any)?.id as number | undefined;
 
   const [scope, setScope] = useState<Scope>(
@@ -225,9 +228,23 @@ function CasesInner() {
                 Customer queries from the app. Newest and unassigned items need action first.
               </p>
             </div>
-            <button onClick={refreshAll} className={btnCls}>
-              <RefreshCw className="h-3.5 w-3.5" /> Refresh
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  const next = !soundOn;
+                  setSoundOn(next);
+                  setAlertSound(next);
+                  toast.success(next ? "Alert sound on" : "Alert sound off");
+                }}
+                className={btnCls}
+                title="Beep when a new case or callback arrives"
+              >
+                {soundOn ? "🔔 Sound on" : "🔕 Sound off"}
+              </button>
+              <button onClick={refreshAll} className={btnCls}>
+                <RefreshCw className="h-3.5 w-3.5" /> Refresh
+              </button>
+            </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
