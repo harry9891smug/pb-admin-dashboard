@@ -79,6 +79,13 @@ export async function billingActivate(id: number): Promise<BillingSubscription> 
   return res.data?.data;
 }
 
+// ─── EXTEND SUBSCRIPTION (days) ───────────────────────────────────────────
+
+export async function billingExtend(id: number, days: number, reason?: string): Promise<BillingSubscription> {
+  const res = await apiClient.post(`/admin/billing/subscriptions/${id}/extend`, { days, reason });
+  return res.data?.data;
+}
+
 // ─── EXTEND GRACE ─────────────────────────────────────────────────────────
 
 export async function billingExtendGrace(id: number, days: number = 3): Promise<BillingSubscription> {

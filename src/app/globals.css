@@ -426,6 +426,19 @@ main:has(.pb-shell) > .pb-page-root { height: 100%; }
   background-color: #ffffff;
 }
 
+/* Compact header: the top card used to eat half the screen, leaving the list
+   (businesses etc.) in a tiny scroll area. Tighter spacing gives the list the room. */
+.pb-shell { gap: 0.6rem; }
+.pb-top-card { padding: 0.8rem 1.1rem; border-radius: 1.1rem; }
+.pb-top-card h1 { font-size: 1.3rem; line-height: 1.6rem; }
+.pb-top-card > .relative.space-y-5 > * + * { margin-top: 0.6rem !important; }
+.pb-top-card .grid > .rounded-xl { padding: 0.5rem 0.75rem !important; }
+.pb-top-card .grid > .rounded-xl p.mt-2 { margin-top: 0.1rem !important; font-size: 1.15rem; line-height: 1.5rem; }
+.pb-top-card input:not([type="checkbox"]):not([type="radio"]),
+.pb-top-card select { min-height: 2.2rem; }
+.pb-list-card { border-radius: 1.1rem; }
+.pb-list-scroll { padding: 0.6rem 0.8rem; }
+
 /* ----- list card ----- */
 .pb-list-card {
   flex: 1 1 auto;

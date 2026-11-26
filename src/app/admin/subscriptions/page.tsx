@@ -313,6 +313,16 @@ const fetchData = async () => {
                           View
                         </Link>
 
+                        {can("subscription.update") && (
+                          <Link
+                            href={`/admin/billing/${r.id}`}
+                            title="Activate, extend, change plan, refund"
+                            className="px-3 py-1.5 rounded-lg text-xs font-medium border border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/10"
+                          >
+                            Extend / Activate
+                          </Link>
+                        )}
+
                         {can("subscription.cancel") && (
                         <button
                           onClick={() => onCancel(r.id)}

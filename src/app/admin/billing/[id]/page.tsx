@@ -8,6 +8,7 @@ import {
   billingActivate,
   billingCancel,
   billingExtendGrace,
+  billingExtend,
   billingRefund,
   billingChangePlan,
   billingDisableMandate,
@@ -54,6 +55,9 @@ export default function BillingDetailPage() {
   const [newPlanId, setNewPlanId] = useState("");
   const [graceDays, setGraceDays] = useState("3");
   const [graceModal, setGraceModal] = useState(false);
+  const [extendDays, setExtendDays] = useState("30");
+  const [extendReason, setExtendReason] = useState("");
+  const [extendModal, setExtendModal] = useState(false);
   const [billingDateModal, setBillingDateModal] = useState(false);
   const [newBillingDate, setNewBillingDate] = useState("");
 
@@ -196,6 +200,9 @@ export default function BillingDetailPage() {
           )}
           {canUpdate && (
             <>
+              <ActionChip color="#10b981" bg="rgba(16,185,129,0.12)" onClick={() => setExtendModal(true)} disabled={actionLoading}>
+                ＋ Extend Subscription
+              </ActionChip>
               <ActionChip color="#3b82f6" bg="rgba(59,130,246,0.12)" onClick={() => setGraceModal(true)} disabled={actionLoading}>
                 ⊕ Extend Grace
               </ActionChip>
@@ -227,6 +234,33 @@ export default function BillingDetailPage() {
       </div>
 
       {/* ── Modals ── */}
+      {extendModal && (
+        <Sheet title="Extend Subscription" onClose={() => setExtendModal(false)}>
+          <p className="text-xs text-slate-400 mb-3">
+            Adds days to the current period end and makes the subscription active again (also works for cancelled or
+            expired ones). Database only — Razorpay is not charged or changed for these days.
+          </p>
+          <Field label="Days to add (1 - 730)">
+            <input type="number" min={1} max={730} value={extendDays} onChange={(e) => setExtendDays(e.target.value)}
+              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-slate-500" />
+          </Field>
+          <Field label="Reason (optional, kept in audit log)">
+            <input value={extendReason} onChange={(e) => setExtendReason(e.target.value)}
+              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-slate-500" />
+          </Field>
+          <SheetFooter
+            onCancel={() => setExtendModal(false)}
+            onConfirm={() => {
+              const d = Number(extendDays);
+              if (!Number.isFinite(d) || d < 1 || d > 730) { toastError("Enter days between 1 and 730"); return; }
+              doAction(() => billingExtend(sub.id, d, extendReason), `Extended by ${d} days`);
+              setExtendModal(false);
+            }}
+            confirmLabel="Extend" confirmColor="bg-emerald-600 hover:bg-emerald-500"
+          />
+        </Sheet>
+      )}
+
       {graceModal && (
         <Sheet title="Extend Grace Period" onClose={() => setGraceModal(false)}>
           <Field label="Extra days to add">

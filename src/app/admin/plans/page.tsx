@@ -43,6 +43,10 @@ type PlanForm = {
   featuresText: string; // textarea -> one feature per line
   allowTopups: boolean;
   topupOptionsText: string; // textarea -> "amount,sms" per line
+
+  razorpayPlanId: string; // Razorpay plan id (plan_xxx) used for the subscription link
+  isTrial: boolean;
+  trialDays: string;
 };
 
 const emptyForm: PlanForm = {
@@ -66,6 +70,10 @@ const emptyForm: PlanForm = {
   featuresText: "",
   allowTopups: false,
   topupOptionsText: "",
+
+  razorpayPlanId: "",
+  isTrial: false,
+  trialDays: "",
 };
 
 function toNumber(v: string, fallback = 0) {
@@ -197,6 +205,10 @@ export default function PlansPage() {
       featuresText: Array.isArray(plan?.features) ? plan.features.join("\n") : "",
       allowTopups: !!plan?.allowTopups,
       topupOptionsText: stringifyTopups(plan?.topupOptions),
+
+      razorpayPlanId: plan?.razorpayPlanId ?? "",
+      isTrial: !!plan?.isTrial,
+      trialDays: plan?.trialDays != null ? String(plan.trialDays) : "",
     });
 
     setIsEditOpen(true);
@@ -218,6 +230,18 @@ export default function PlansPage() {
     if (toNumber(form.smsLimit, -1) < 0) return "SMS limit invalid";
     if (toNumber(form.offerLimit, -1) < 0) return "Offer limit invalid";
     if (toNumber(form.discountAmount, -1) < 0) return "Discount invalid";
+    if (form.razorpayPlanId.trim() && !/^plan_[A-Za-z0-9]+$/.test(form.razorpayPlanId.trim())) {
+      return 'Razorpay Plan ID should look like "plan_AbC123xyz"';
+    }
+    if (form.isTrial) {
+      if (toNumber(form.amount, -1) !== 0) return "Trial plan must have selling price 0";
+      if (form.allowTopups) return "Trial plan cannot allow topups";
+      if (!(toNumber(form.trialDays, 0) >= 1)) return "Trial days required (1 or more)";
+    }
+    if (!form.isTrial && form.billingType === "recurring" && toNumber(form.amount, 0) > 0 && !form.razorpayPlanId.trim()) {
+      // Not blocking: the plan can be saved first and linked later, but warn.
+      toast("No Razorpay Plan ID set: customers can't pay for this plan until you add it.", { icon: "⚠️" });
+    }
     if (form.mrp.trim() !== "") {
       const mrp = toNumber(form.mrp, -1);
       if (mrp < 0) return "MRP invalid";
@@ -248,6 +272,10 @@ export default function PlansPage() {
       features: parseFeatures(form.featuresText),
       allowTopups: !!form.allowTopups,
       topupOptions: form.allowTopups ? parseTopups(form.topupOptionsText) : [],
+
+      razorpayPlanId: form.razorpayPlanId.trim() || null,
+      isTrial: !!form.isTrial,
+      trialDays: form.isTrial ? toNumber(form.trialDays, 0) : undefined,
     };
 
     return payload;
@@ -461,6 +489,22 @@ export default function PlansPage() {
                         Discount <b>{plan.discountAmount}</b>
                       </span>
                     )}
+                    {plan.isTrial && (
+                      <span>
+                        Trial <b>{plan.trialDays ?? "-"} days</b>
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-xs text-slate-400">
+                    Razorpay plan:{" "}
+                    {plan.razorpayPlanId ? (
+                      <span className="font-mono text-slate-200">{plan.razorpayPlanId}</span>
+                    ) : (
+                      <span className="text-amber-500">not linked</span>
+                    )}
+                    {" • "}Sort {plan.sortOrder ?? 0}
+                    {plan.isPopular ? " • Popular" : ""}
+                    {plan.allowTopups ? " • Topups on" : ""}
                   </div>
                 </div>
 
@@ -535,14 +579,39 @@ export default function PlansPage() {
                   label="Billing Cycle"
                   value={form.billingCycle}
                   onChange={(v) => setForm((p) => ({ ...p, billingCycle: v as BillingCycle }))}
-                  options={[
-                    { value: "monthly", label: "Monthly" },
-                    { value: "yearly", label: "Yearly" },
-                    { value: "weekly", label: "Weekly" },
-                    { value: "daily", label: "Daily" },
-                  ]}
+                  options={[{ value: "monthly", label: "Monthly" }]}
                   disabled={form.billingType !== "recurring"}
                 />
+
+                <div className="md:col-span-2">
+                  <Field
+                    label="Razorpay Plan ID (plan_xxx) — from Razorpay Dashboard → Subscriptions → Plans"
+                    value={form.razorpayPlanId}
+                    onChange={(v) => setForm((p) => ({ ...p, razorpayPlanId: v }))}
+                  />
+                  <p className="text-xs text-slate-500 mt-1">
+                    The app creates the customer's Razorpay subscription from this plan. Create the plan in Razorpay with
+                    the same amount and monthly period, then paste its ID here.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2 mt-2">
+                  <input
+                    type="checkbox"
+                    checked={form.isTrial}
+                    onChange={(e) => setForm((p) => ({ ...p, isTrial: e.target.checked }))}
+                  />
+                  <span className="text-sm text-slate-200">Trial plan (price 0, no topups)</span>
+                </div>
+
+                {form.isTrial && (
+                  <Field
+                    label="Trial days *"
+                    type="number"
+                    value={form.trialDays}
+                    onChange={(v) => setForm((p) => ({ ...p, trialDays: v }))}
+                  />
+                )}
 
                 <Field
                   label="Selling price (₹) * — charged via Razorpay"

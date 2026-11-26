@@ -88,12 +88,56 @@ export default function ReferralsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [typeFilter]);
 
+  const [editing, setEditing] = useState<ReferralCode | null>(null);
+
   const openCreate = () => {
+    setEditing(null);
     setForm({ code: "", ownerType: "influencer", ownerName: "", notes: "", smsCredits: 30, maxUses: "" });
     setIsCreateOpen(true);
   };
 
+  const openEdit = (c: ReferralCode) => {
+    setEditing(c);
+    setForm({
+      code: c.code,
+      ownerType: c.ownerType,
+      ownerName: c.ownerName,
+      notes: c.notes ?? "",
+      smsCredits: c.smsCredits,
+      maxUses: c.maxUses ? String(c.maxUses) : "",
+    });
+    setIsCreateOpen(true);
+  };
+
   const handleCreate = async () => {
+    if (editing) {
+      if (!form.ownerName.trim()) return toast.error("Owner name is required");
+      if (form.smsCredits < 0) return toast.error("SMS credits cannot be negative");
+      const mu = form.maxUses.trim() ? Number(form.maxUses) : null;
+      if (mu !== null && (!Number.isInteger(mu) || mu < 1)) {
+        return toast.error("Max uses must be a whole number of 1 or more, or empty for no limit");
+      }
+      try {
+        setSaving(true);
+        await adminUpdateReferral(editing.id, {
+          ownerType: form.ownerType,
+          ownerName: form.ownerName.trim(),
+          notes: form.notes.trim() || null,
+          smsCredits: Number(form.smsCredits),
+          maxUses: mu,
+        });
+        toast.success(`Code ${editing.code} updated`);
+        setIsCreateOpen(false);
+        setEditing(null);
+        fetchData();
+      } catch (e: any) {
+        toast.error(e.message || "Update failed");
+      } finally {
+        setSaving(false);
+      }
+      return;
+    }
+
     const code = form.code.trim().toUpperCase();
     if (!/^[A-Z0-9_-]{3,30}$/.test(code)) return toast.error("Code: 3-30 letters, numbers, - or _");
     if (!form.ownerName.trim()) return toast.error("Owner name is required");
@@ -272,7 +316,7 @@ export default function ReferralsPage() {
               <h3 className="text-lg font-medium text-slate-300">No referral codes yet</h3>
             </div>
           ) : (
-            codesMore.visible.map((c) => (
+            codes.map((c) => (
               <div
                 key={c.id}
                 className="rounded-xl border border-slate-800 bg-slate-900/60 p-5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
@@ -332,6 +376,14 @@ export default function ReferralsPage() {
                   </button>
                   {canManage && (
                     <button
+                      onClick={() => openEdit(c)}
+                      className="inline-flex items-center gap-1.5 px-3 py-2 text-sm text-slate-300 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg transition-colors border border-slate-700"
+                    >
+                      Edit
+                    </button>
+                  )}
+                  {canManage && (
+                    <button
                       onClick={() => toggleActive(c)}
                       className="inline-flex items-center gap-1.5 px-3 py-2 text-sm text-slate-300 hover:text-amber-400 hover:bg-amber-500/10 rounded-lg transition-colors border border-slate-700"
                     >
@@ -343,7 +395,6 @@ export default function ReferralsPage() {
               </div>
             ))
           )}
-          <ShowMoreButton hasMore={codesMore.hasMore} rest={codesMore.rest} onClick={codesMore.more} />
         </div>
       </PageShell>
 
@@ -352,8 +403,8 @@ export default function ReferralsPage() {
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
             <div className="w-full max-w-lg rounded-xl border border-slate-800 bg-slate-950 p-5">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold">New Referral Code</h3>
-                <button onClick={() => setIsCreateOpen(false)} className="text-slate-400 hover:text-white">
+                <h3 className="text-lg font-semibold">{editing ? `Edit ${editing.code}` : "New Referral Code"}</h3>
+                <button onClick={() => { setIsCreateOpen(false); setEditing(null); }} className="text-slate-400 hover:text-white">
                   ✕
                 </button>
               </div>
@@ -366,9 +417,14 @@ export default function ReferralsPage() {
                     onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })}
                     placeholder="RAHUL30"
                     maxLength={30}
-                    className={inputCls}
+                    disabled={!!editing}
+                    className={`${inputCls} disabled:opacity-60`}
                   />
-                  <p className="text-xs text-slate-500 mt-1">3-30 letters, numbers, - or _. The shopkeeper types this at login.</p>
+                  <p className="text-xs text-slate-500 mt-1">
+                    {editing
+                      ? "The code itself can't be changed. Create a new code if needed."
+                      : "3-30 letters, numbers, - or _. The shopkeeper types this at login."}
+                  </p>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
@@ -432,7 +488,7 @@ export default function ReferralsPage() {
 
               <div className="mt-6 flex justify-end gap-3">
                 <button
-                  onClick={() => setIsCreateOpen(false)}
+                  onClick={() => { setIsCreateOpen(false); setEditing(null); }}
                   disabled={saving}
                   className="px-4 py-2.5 rounded-lg border border-slate-700 text-slate-300 text-sm font-medium hover:bg-slate-800 transition-colors disabled:opacity-50"
                 >
@@ -443,7 +499,7 @@ export default function ReferralsPage() {
                   disabled={saving}
                   className="px-4 py-2.5 rounded-lg bg-emerald-500 text-slate-950 text-sm font-medium hover:bg-emerald-400 transition-colors disabled:opacity-50"
                 >
-                  {saving ? "Creating..." : "Create"}
+                  {saving ? (editing ? "Saving..." : "Creating...") : editing ? "Save changes" : "Create"}
                 </button>
               </div>
             </div>

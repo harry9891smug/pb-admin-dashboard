@@ -8,6 +8,7 @@ import {
   billingActivate,
   billingCancel,
   billingExtendGrace,
+  billingExtend,
   formatBillingStatus,
   statusColor,
   BillingSubscription,
@@ -16,6 +17,7 @@ import { cn } from "@/lib/utils";
 import { toastSuccess, toastError } from "@/lib/toast";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import PageShell from "@/components/ui/PageShell";
+import { useCan } from "@/hooks/useCan";
 
 const PAGE_SIZE = 15;
 
@@ -70,6 +72,30 @@ export default function BillingSubscriptionsPage() {
   // this page's matching results.
   const paginated = rows;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+
+  const can = useCan();
+  const canUpdate = can("subscription.update");
+  const canCancel = can("subscription.cancel");
+
+  const doExtend = async (id: number) => {
+    const raw = window.prompt("Extend this subscription by how many days? (1 - 730)", "30");
+    if (raw === null) return;
+    const days = Math.floor(Number(raw));
+    if (!Number.isFinite(days) || days < 1 || days > 730) {
+      toastError("Enter days between 1 and 730");
+      return;
+    }
+    setActionLoading(id);
+    try {
+      await billingExtend(id, days);
+      toastSuccess(`Extended by ${days} days`);
+      await fetchData();
+    } catch (e: any) {
+      toastError(e?.response?.data?.error?.message || "Extend failed");
+    } finally {
+      setActionLoading(null);
+    }
+  };
 
   const doAction = async (id: number, action: "suspend" | "activate" | "cancel" | "grace") => {
     const labels = { suspend: "Suspend", activate: "Activate", cancel: "Cancel", grace: "Extend Grace" };
@@ -209,16 +235,19 @@ export default function BillingSubscriptionsPage() {
                     <Td>
                       <div className="flex items-center gap-1.5 flex-wrap">
                         <Btn color="slate" onClick={() => router.push(`/admin/billing/${r.id}`)}>View</Btn>
-                        {r.status !== "active" && (
+                        {canUpdate && r.status !== "active" && (
                           <Btn color="emerald" onClick={() => doAction(r.id, "activate")} disabled={actionLoading === r.id}>Activate</Btn>
                         )}
-                        {r.status === "active" && (
+                        {canUpdate && (
+                          <Btn color="blue" onClick={() => doExtend(r.id)} disabled={actionLoading === r.id}>Extend</Btn>
+                        )}
+                        {canUpdate && r.status === "active" && (
                           <Btn color="yellow" onClick={() => doAction(r.id, "suspend")} disabled={actionLoading === r.id}>Suspend</Btn>
                         )}
-                        {r.status === "grace" && (
+                        {canUpdate && r.status === "grace" && (
                           <Btn color="blue" onClick={() => doAction(r.id, "grace")} disabled={actionLoading === r.id}>+3 Days</Btn>
                         )}
-                        {r.status !== "cancelled" && (
+                        {canCancel && r.status !== "cancelled" && (
                           <Btn color="red" onClick={() => doAction(r.id, "cancel")} disabled={actionLoading === r.id}>Cancel</Btn>
                         )}
                       </div>

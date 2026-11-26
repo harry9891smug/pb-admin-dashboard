@@ -704,7 +704,12 @@ export const createPlan = async (payload: any) => {
 
       allowTopups: !!payload?.allowTopups,
       topupOptions: Array.isArray(payload?.topupOptions) ? payload.topupOptions : [],
+
+      // Razorpay plan id (plan_xxx) the app charges against, and trial settings.
+      razorpayPlanId: payload?.razorpayPlanId ? String(payload.razorpayPlanId).trim() : null,
+      isTrial: !!payload?.isTrial,
     };
+    if (body.isTrial && Number(payload?.trialDays) > 0) body.trialDays = Math.floor(Number(payload.trialDays));
 
     if (!body.name) throw new Error("name is required");
 
@@ -761,6 +766,12 @@ export const updatePlan = async (id: number, payload: any) => {
     if (payload?.features !== undefined) body.features = Array.isArray(payload.features) ? payload.features : [];
     if (payload?.allowTopups !== undefined) body.allowTopups = !!payload.allowTopups;
     if (payload?.topupOptions !== undefined) body.topupOptions = Array.isArray(payload.topupOptions) ? payload.topupOptions : [];
+
+    if (payload?.razorpayPlanId !== undefined) {
+      body.razorpayPlanId = payload.razorpayPlanId ? String(payload.razorpayPlanId).trim() : null;
+    }
+    if (payload?.isTrial !== undefined) body.isTrial = !!payload.isTrial;
+    if (payload?.isTrial && Number(payload?.trialDays) > 0) body.trialDays = Math.floor(Number(payload.trialDays));
 
     // clean: if one_time, billingCycle remove
     if (body.billingType === "one_time") delete body.billingCycle;

@@ -916,56 +916,53 @@ const stateOptions = useMemo(() => {
               </p>
             </div>
           ) : (
-            <div className="grid gap-4">
+            <div className="w-full rounded-lg border border-gray-200 bg-white">
+              {/* Header row: one compact table so many businesses fit on screen */}
+              <div className="hidden grid-cols-[2.2fr_1.2fr_1.2fr_1fr_1.4fr_1fr_88px] gap-3 border-b border-gray-200 bg-gray-50 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-gray-600 lg:grid">
+                <div>Business</div>
+                <div>Owner mobile</div>
+                <div>City</div>
+                <div>Plan</div>
+                <div>Subscription</div>
+                <div>Registered</div>
+                <div className="text-right">Actions</div>
+              </div>
               {businesses.map((business) => (
                 <div
                   key={business.id}
-                  className="rounded-xl border border-slate-800 bg-slate-900/60 p-6 hover:border-slate-700 transition-colors"
+                  className="grid grid-cols-1 items-center gap-1 border-b border-gray-100 px-4 py-2.5 text-sm text-gray-800 last:border-b-0 hover:bg-violet-50/40 lg:grid-cols-[2.2fr_1.2fr_1.2fr_1fr_1.4fr_1fr_88px] lg:gap-3"
                 >
-                  <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
-                    <div className="flex-1 space-y-4">
-                      <div className="flex items-start justify-between">
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2">
-                            <Building2 className="w-4 h-4 text-emerald-400" />
-                            <h3 className="font-semibold text-slate-100">{business.businessname}</h3>
-                          </div>
-                          <div className="flex flex-wrap items-center gap-2">
-                            <span className="text-sm text-slate-400">{business.category}</span>
-                            {business.subscription?.plan && getPlanBadge(business.subscription.plan)}
-                          </div>
-                        </div>
-                        <div className="lg:hidden">{getStatusBadge(business)}</div>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
-                        <div className="flex items-center gap-2 text-slate-400">
-                          <MapPin className="w-4 h-4" />
-                          <span className="truncate">{business.city || business.address || "No address"}</span>
-                        </div>
-
-                        <div className="flex items-center gap-2 text-slate-400">
-                          <User className="w-4 h-4" />
-                          <span>{business.owner?.mobile || "No owner"}</span>
-                        </div>
-
-                        <div className="flex items-center gap-2 text-slate-400">
-                          <CreditCard className="w-4 h-4" />
-                          <span>{business.subscription ? `Subscription: ${business.subscription.status}` : "No subscription"}</span>
-                        </div>
-                      </div>
-
-                      <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
-                        <span>Registered: {formatDate(business.createdAt)}</span>
-                        {business.subscription?.trialEndsAt && <span>Trial ends: {formatDate(business.subscription.trialEndsAt)}</span>}
-                        {business.subscription?.currentPeriodEnd && <span>Renews: {formatDate(business.subscription.currentPeriodEnd)}</span>}
-                      </div>
+                  <div className="min-w-0">
+                    <div className="truncate font-semibold text-gray-900" title={business.businessname}>
+                      {business.businessname}
                     </div>
-
-                    <div className="flex items-center gap-3 lg:flex-col lg:items-end">
-                      <div className="hidden lg:block">{getStatusBadge(business)}</div>
-
-                      <div className="flex items-center gap-1" data-actions-root="true">
+                    <div className="truncate text-xs text-gray-500">
+                      #{business.id}
+                      {business.category ? ` • ${business.category}` : ""}
+                    </div>
+                  </div>
+                  <div className="truncate">{business.owner?.mobile || "-"}</div>
+                  <div className="truncate" title={business.city || business.address || ""}>
+                    {business.city || business.address || "-"}
+                  </div>
+                  <div className="truncate">
+                    {business.subscription?.plan ? getPlanBadge(business.subscription.plan) : <span className="text-gray-400">-</span>}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      {getStatusBadge(business)}
+                    </div>
+                    {(business.subscription?.trialEndsAt || business.subscription?.currentPeriodEnd) && (
+                      <div className="mt-0.5 truncate text-[11px] text-gray-500">
+                        {business.subscription?.trialEndsAt
+                          ? `Trial ends ${formatDate(business.subscription.trialEndsAt)}`
+                          : `Renews ${formatDate(business.subscription?.currentPeriodEnd)}`}
+                      </div>
+                    )}
+                  </div>
+                  <div className="truncate text-xs text-gray-600">{formatDate(business.createdAt)}</div>
+                  <div className="flex justify-end">
+                    <div className="flex items-center gap-1" data-actions-root="true">
                         {/* VIEW */}
                         <button
                           onClick={() => openView(business)}
@@ -1034,7 +1031,6 @@ const stateOptions = useMemo(() => {
                       </div>
                     </div>
                   </div>
-                </div>
               ))}
             </div>
           )}
