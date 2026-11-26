@@ -8,6 +8,7 @@ import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { useCan } from "@/hooks/useCan";
 import { apiErrorMessage } from "@/lib/api/admin/cases";
+import { search360 } from "@/lib/api/admin/business360";
 import {
   deleteMedia,
   deleteOrphans,
@@ -50,6 +51,17 @@ function Inner() {
   const [loading, setLoading] = useState(false);
   const [listError, setListError] = useState<string | null>(null);
   const [listWarning, setListWarning] = useState<string | null>(null);
+  // "business-17" folders -> business name + public id, so the team knows whose files they are.
+  const [bizNames, setBizNames] = useState<Record<number, { name: string; publicId?: string | null }>>({});
+  const bizIdOf = (folder: string) => {
+    const m = folder.replace(/\/$/, "").split("/").pop()?.match(/^business-(\d+)$/);
+    return m ? Number(m[1]) : null;
+  };
+  const bizLabel = (folder: string) => {
+    const id = bizIdOf(folder);
+    const b = id ? bizNames[id] : null;
+    return b ? [b.name, b.publicId ? `ID ${b.publicId}` : null].filter(Boolean).join(" • ") : "";
+  };
   const [uploading, setUploading] = useState(false);
   const [pendingDelete, setPendingDelete] = useState<MediaFile | null>(null);
   const [preview, setPreview] = useState<MediaFile | null>(null);
@@ -84,6 +96,33 @@ function Inner() {
     },
     []
   );
+
+  // Look up names for any business-<id> folders shown (needs support.business_search; silently skipped otherwise).
+  useEffect(() => {
+    const ids = folders.map(bizIdOf).filter((x): x is number => !!x && !bizNames[x]);
+    if (ids.length === 0 || !can("support.business_search")) return;
+    let alive = true;
+    (async () => {
+      for (const id of ids.slice(0, 60)) {
+        try {
+          const rows = await search360(String(id));
+          const hit = rows.find((r) => r.id === id);
+          if (hit && alive) {
+            setBizNames((cur) => ({
+              ...cur,
+              [id]: { name: hit.businessname || hit.name || `#${id}`, publicId: hit.publicId },
+            }));
+          }
+        } catch {
+          return;
+        }
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [folders]);
 
   useEffect(() => {
     load(prefix);
@@ -229,6 +268,7 @@ function Inner() {
                 >
                   <Folder className="h-3.5 w-3.5 text-amber-500" />
                   {f.slice(prefix.length).replace(/\/$/, "")}
+                  {bizLabel(f) ? <span className="text-gray-500">• {bizLabel(f)}</span> : null}
                 </button>
               ))}
             </div>
